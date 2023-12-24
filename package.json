@@ -1,11 +1,11 @@
 {
-   "scripts": {
-    "start": "node server.js"
-  },
+   
   "name": "assignment_data",
   "version": "1.0.0",
   "main": "server.js",
-  
+  "scripts": {
+    "start": "node server.js"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
