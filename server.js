@@ -1,5 +1,5 @@
 const { MongoClient, ServerApiVersion, MongoCursorInUseError } = require('mongodb');
-const uri = "mongodb+srv://ammarpauzan:Mar25052002@cluster0.nyml2l7.mongodb.net/?retryWrites=true&w=majority";
+const uri = "https://hospitalvisitor.azurewebsites.net";
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const app = express();
