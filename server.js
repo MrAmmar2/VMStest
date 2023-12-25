@@ -13,6 +13,21 @@ app.listen(port, () => {
 app.get('/', (req, res) => {
        res.send('Hello World!')
     });
+fetch('https://hospitalvisitor.azurewebsites.net/api/endpoint')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    // Process data returned from the server
+    console.log(data);
+  })
+  .catch(error => {
+    // Handle errors
+    console.error('There was a problem with the request:', error);
+  });
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
