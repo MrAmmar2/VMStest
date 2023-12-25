@@ -24,11 +24,6 @@ const options = {
 const specs = swaggerJsdoc(options);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-app.use(express.json());
-app.listen(port, () => {
-      console.log(`Server listening at http://localhost:${port}`);
-    });
-
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
