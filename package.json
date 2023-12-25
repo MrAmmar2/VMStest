@@ -1,6 +1,6 @@
 {
    
-  "name": "VMStest",
+  "name": "vmstest",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
