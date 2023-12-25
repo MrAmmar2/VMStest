@@ -28,9 +28,6 @@ app.use(express.json());
 app.listen(port, () => {
       console.log(`Server listening at http://localhost:${port}`);
     });
-app.get('/', (req, res) => {
-       res.send('Hello World!')
-    });
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -53,6 +50,21 @@ async function run() {
     app.listen(port, () => {
       console.log(`Server listening at http://localhost:${port}`);
     });
+      /**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Hello World endpoint
+ *     description: Returns a greeting message.
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: Hello World!
+ */
     app.get('/', (req, res) => {
        res.send('Hello World!')
     });
