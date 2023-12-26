@@ -17,6 +17,15 @@ const options = {
       version: '1.0.0',
       description: 'Documentation for your APIs',
     },
+    components: {//
+      securitySchemes:{
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat:'JWT'
+        }
+      }
+    }
   },
   apis: ['./server.js'], // Replace this with the file containing your route definitions
 };
