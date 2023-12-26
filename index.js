@@ -85,193 +85,36 @@ async function run() {
       let data = req.body;
       res.send(await regAdmin(client, data));
     });
-/**
- * @swagger
- * /login1:
- *   post:
- *     summary: Endpoint to perform user login
- *     description: Logs a user in and returns authentication data
- *     consumes:
- *       - application/json
- *     produces:
- *       - application/json
- *     parameters:
- *       - in: body
- *         name: data
- *         description: User login data
- *         required: true
- *         schema:
- *           type: object
- *           # Define the structure of your request body here
- *     responses:
- *       200:
- *         description: Successful login
- *         schema:
- *           type: object
- *           # Define the structure of your response here
- *       # Add other response codes as needed
- *       '400':
- *         description: Bad request
- */
-
     app.post('/login1', async (req, res) => {
       let data = req.body;
       res.send(await login(client, data));
     });
-/**
- * @swagger
- * /register:
- *   post:
- *     summary: Register a user
- *     description: Endpoint to register a user using authentication token.
- *     tags:
- *       - Registration
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               # Add properties for your request body here
- *     responses:
- *       '200':
- *         description: Success
- *       # Add other possible responses here with correct indentation
- *       '400':
- *         description: Bad request
- */
-
     app.post('/register', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis = req.body;
       res.send(await register(client, data, DataVis));
     });
-/**
- * @swagger
- * /read:
- *   get:
- *     summary: Get user data
- *     description: Retrieves data for the authenticated user.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: object  # Replace this with your actual response schema if available
- *     securitySchemes:
- *       bearerAuth:
- *         type: http
- *         scheme: bearer
- *       '400':
- *         description: Bad request
- */
+
     app.get('/read', authenticateToken, async (req, res) => {
       let data = req.user;
       res.send(await read(client, data));
     });
-/**
- * @swagger
- * /update:
- *   patch:
- *     summary: Update visitor information
- *     description: Endpoint to update visitor information
- *     tags:
- *       - Visitors
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               // Define your request body properties here
- *     responses:
- *       '200':
- *         description: Successfully updated visitor information
- *       '401':
- *         description: Unauthorized
- *       '500':
- *         description: Internal server error
- *       '400':
- *         description: Bad request
- */
+
     app.patch('/update', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis=req.body;
       res.send(await updateVisitorInformation(client, data,DataVis));
     });
-/**
- * @swagger
- * /deleteVisitor:
- *   delete:
- *     summary: Delete a visitor
- *     description: Delete a visitor based on the authenticated user's information.
- *     tags:
- *       - Visitors
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Success message indicating the visitor was deleted.
- *       401:
- *         description: Unauthorized - Invalid token or authentication failure.
- *       500:
- *         description: Internal server error.
- */
     app.delete('/deleteVisitor', authenticateToken, async (req, res) => {
       let data = req.user;
       res.send(await deleteVisitor(client, data));
     });
-/**
- * @swagger
- * /checkIn:
- *   post:
- *     summary: Endpoint to perform check-in.
- *     tags:
- *       - Check-In
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CheckInData'
- *     responses:
- *       200:
- *         description: Successful check-in.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/CheckInResponse'
- */
+
     app.post('/checkIn', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis = req.body;
       res.send(await checkIn(client, data, DataVis));
     });
-/**
- * @swagger
- * /checkOut:
- *   patch:
- *     summary: Check out operation
- *     description: Endpoint to perform a check out action.
- *     tags:
- *       - CheckOut
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: Successfully checked out.
- *       '401':
- *         description: Unauthorized access.
- */
     app.patch('/checkOut', authenticateToken, async (req, res) => {
       let data = req.user;
       res.send(await checkOut(client, data));
