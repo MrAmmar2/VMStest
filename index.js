@@ -26,7 +26,7 @@ const options = {
       }
     }
   },
-  apis: ['./server.js'], // Replace this with the file containing your route definitions
+  apis: ['./index.js'], // Replace this with the file containing your route definitions
 };
 
 const specs = swaggerJsdoc(options);
