@@ -113,6 +113,7 @@ async function run() {
  *       '400':
  *         description: Bad request
  */
+
     app.post('/login1', async (req, res) => {
       let data = req.body;
       res.send(await login(client, data));
@@ -134,14 +135,15 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               // Add properties for your request body here
+ *               # Add properties for your request body here
  *     responses:
- *       200:
+ *       '200':
  *         description: Success
- *       // Add other possible responses here
+ *       # Add other possible responses here with correct indentation
  *       '400':
  *         description: Bad request
  */
+
     app.post('/register', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis = req.body;
