@@ -13,17 +13,16 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Your API Documentation',
+      title: 'VMS API',
       version: '1.0.0',
-      description: 'Documentation for your APIs',
     },
-    components: {//
-      securitySchemes:{
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat:'JWT'
-        }
+  components: {  // Add 'components' section
+      securitySchemes: {  // Define 'securitySchemes'
+          bearerAuth: {  // Define 'bearerAuth'
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+          }
       }
     }
   },
@@ -54,25 +53,10 @@ async function run() {
     app.listen(port, () => {
       console.log(`Server listening at http://localhost:${port}`);
     });
-      /**
- * @swagger
- * /:
- *   get:
- *     summary: Hello World endpoint
- *     description: Returns a greeting message.
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: Hello World!
- */
     app.get('/', (req, res) => {
        res.send('Hello World!')
     });
-    /**
+/**
  * @swagger
  * /regAdmin:
  *   post:
@@ -85,11 +69,17 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               // Define your request body properties here
+ *               # Define your request body properties here
  *     responses:
- *       200:
+ *       '200':
  *         description: Success response
- *       // Add other possible response codes and descriptions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               # Define the structure of your response here
+ *       '400':
+ *         description: Bad request
  */
     app.post('/regAdmin', async (req, res) => {
       let data = req.body;
@@ -120,6 +110,8 @@ async function run() {
  *           type: object
  *           # Define the structure of your response here
  *       # Add other response codes as needed
+ *       '400':
+ *         description: Bad request
  */
     app.post('/login1', async (req, res) => {
       let data = req.body;
@@ -147,6 +139,8 @@ async function run() {
  *       200:
  *         description: Success
  *       // Add other possible responses here
+ *       '400':
+ *         description: Bad request
  */
     app.post('/register', authenticateToken, async (req, res) => {
       let data = req.user;
@@ -172,6 +166,8 @@ async function run() {
  *       bearerAuth:
  *         type: http
  *         scheme: bearer
+ *       '400':
+ *         description: Bad request
  */
     app.get('/read', authenticateToken, async (req, res) => {
       let data = req.user;
@@ -202,6 +198,8 @@ async function run() {
  *         description: Unauthorized
  *       '500':
  *         description: Internal server error
+ *       '400':
+ *         description: Bad request
  */
     app.patch('/update', authenticateToken, async (req, res) => {
       let data = req.user;
