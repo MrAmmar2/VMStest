@@ -11,10 +11,7 @@
     "bcrypt": "^5.1.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
-<<<<<<< HEAD
-=======
     "mongodb": "^6.3.0",
->>>>>>> 1a52f88 (VMSassign2)
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   },
