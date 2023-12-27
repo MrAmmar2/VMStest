@@ -84,15 +84,6 @@ async function run() {
 *     responses:
  *       '200':
  *         description: Admin registered successfully or already exists
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 token:
- *                   type: string
  *       '500':
  *         description: Internal server error
  *     tags:
@@ -124,6 +115,15 @@ async function run() {
  *     responses:
  *       '200':
  *         description: Successful login or token generated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
  *       '401':
  *         description: Invalid username or password
  *       '404':
