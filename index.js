@@ -81,9 +81,18 @@ async function run() {
  *                 type: string
  *               email:
  *                 type: string
- *     responses:
+*     responses:
  *       '200':
  *         description: Admin registered successfully or already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
  *       '500':
  *         description: Internal server error
  *     tags:
