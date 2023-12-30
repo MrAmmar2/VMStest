@@ -8,6 +8,23 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { PublicClientApplication } = require('@azure/msal-node');
+const msalConfig = {
+  auth: {
+      clientId: 'YOUR_CLIENT_ID', // Replace with your Azure AD app's client ID
+      authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Replace with your Azure AD tenant ID
+  },
+  system: {
+      loggerOptions: {
+          loggerCallback(loglevel, message, containsPii) {
+              console.log(message);
+          },
+          piiLoggingEnabled: false,
+          logLevel: 1,
+      },
+  },
+};
+const pca = new PublicClientApplication(msalConfig);
 
 const options = {
   definition: {
@@ -41,6 +58,21 @@ const client = new MongoClient(uri, {
   }
 });
 
+async function signIn() {
+  const authCodeUrlParameters = {
+      scopes: ['openid', 'profile', 'User.Read'],
+      redirectUri: 'http://localhost', // Replace with your redirect URI
+  };
+
+  try {
+      const authResponse = await pca.acquireTokenByDeviceCode(authCodeUrlParameters);
+      console.log('Access Token:', authResponse.accessToken);
+
+      // Use the access token to call APIs or perform operations
+  } catch (error) {
+      console.error('Error acquiring token:', error);
+  }
+}
 // Connect the client to the server (optional starting in v4.7)
 async function run() {
     try {
@@ -56,7 +88,7 @@ async function run() {
 
 
     app.get('/', (req, res) => {
-       res.send('Hello World!')
+       res.send(signIn())
     });
 
 
