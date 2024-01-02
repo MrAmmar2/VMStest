@@ -145,17 +145,6 @@ async function run() {
  *               password:
  *                 type: string
  *     responses:
- *       '200':
- *         description: Successful login or token generated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 token:
- *                   type: string
  *       '401':
  *         description: Invalid username or password
  *       '404':
