@@ -123,7 +123,7 @@ async function run() {
  */
     app.post('/regAdmin', async (req, res) => {
       let data = req.body;
-      res.send(await regAdmin(client, data));
+      res.send(await register(client, data));
     });
 
 
@@ -513,20 +513,23 @@ run().catch(console.error);
     }
   }
   //register admin 
-  async function regAdmin(client, data) {
+async function regAdmin(client, data) {
   const existingAdmin = await client
     .db("labdata")
     .collection("data")
-    .findOne({ username: data.username, role: "Admin" });
+    .findOne({ username: data.username ,role: "Admin"});
 
   if (existingAdmin) {
     return "Admin already registered";
-  }else {
+  } else {
     data.password = await encryptPassword(data.password);
-  const result = await client.db("labdata").collection("data").insertOne(data);
-  return 'Admin registered';
+    // Adding the 'role' field to the data object before insertion
+    data.role = "Admin";
+    
+    const result = await client.db("labdata").collection("data").insertOne(data);
+    return 'Admin registered';
   }
-    }
+}
  //login 
   async function login(client, data) {
     const user = await client
