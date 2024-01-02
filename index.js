@@ -123,7 +123,7 @@ async function run() {
  */
     app.post('/regAdmin', async (req, res) => {
       let data = req.body;
-      res.send(await register(client, data));
+      res.send(await regAdmin(client, data));
     });
 
 
@@ -524,6 +524,7 @@ async function regAdmin(client, data) {
   } else {
     data.password = await encryptPassword(data.password);
     // Adding the 'role' field to the data object before insertion
+    data.role = "Admin";
     const result = await client.db("labdata").collection("data").insertOne(data);
     return 'Admin registered';
   }
