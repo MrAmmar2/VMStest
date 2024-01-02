@@ -517,15 +517,13 @@ async function regAdmin(client, data) {
   const existingAdmin = await client
     .db("labdata")
     .collection("data")
-    .findOne({ username: data.username ,role: "Admin"});
+    .findOne({ username: data.username , role: "Admin"});
 
   if (existingAdmin) {
     return "Admin already registered";
   } else {
     data.password = await encryptPassword(data.password);
     // Adding the 'role' field to the data object before insertion
-    data.role = "Admin";
-    
     const result = await client.db("labdata").collection("data").insertOne(data);
     return 'Admin registered';
   }
