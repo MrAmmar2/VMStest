@@ -113,9 +113,7 @@ async function run() {
  *                 type: string
  *               email:
  *                 type: string
-*     responses:
- *       '200':
- *         description: Admin registered successfully or already exists
+ *     responses:
  *       '500':
  *         description: Internal server error
  *     tags:
@@ -196,8 +194,6 @@ async function run() {
  *               company:
  *                 type: string
  *     responses:
- *       '200':
- *         description: User registered successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '409':
@@ -284,8 +280,6 @@ async function run() {
  *               company:
  *                 type: string
  *     responses:
- *       '200':
- *         description: Visitor information updated successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '403':
@@ -309,8 +303,6 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
- *         description: Visitor deleted successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '500':
@@ -343,8 +335,6 @@ async function run() {
  *               purpose:
  *                 type: string
  *     responses:
- *       '200':
- *         description: Visitor checked in successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '403':
@@ -374,8 +364,6 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
- *         description: Visitor checked out successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '404':
