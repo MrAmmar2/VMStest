@@ -518,7 +518,6 @@ async function regAdmin(client, data) {
   
       if (isPasswordMatch) {
         return Display(user.role);
-        return "Token for "  user.name  ": " generateToken(user);
       } else {
         return "Wrong password";
       }
@@ -529,7 +528,7 @@ async function regAdmin(client, data) {
   //output 
   function Display(data) {
     if(data == 'Admin') {
-      return "You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records"
+      return "You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n  Token for "  user.name  ": " generateToken(user);
     } else if (data == 'Security') {
       return "You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n"
     } else if (data == 'Visitor') {
