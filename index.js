@@ -517,8 +517,8 @@ async function regAdmin(client, data) {
       const isPasswordMatch = await decryptPassword(data.password, user.password);
   
       if (isPasswordMatch) {
-        console.log("Token for " + user.name + ": " + generateToken(user));
         return Display(user.role);
+        return "Token for "  user.name  ": " generateToken(user);
       } else {
         return "Wrong password";
       }
