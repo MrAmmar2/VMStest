@@ -124,42 +124,11 @@ async function run() {
       res.send(await regAdmin(client, data));
     });
 
- /**
- * @swagger
- * /loginSecurity:
- *   post:
- *     summary: Login Security
- *     description: Authenticates a user's login credentials
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       '401':
- *         description: Invalid username or password
- *       '404':
- *         description: User not found
- *       '500':
- *         description: Internal server error
- *     tags:
- *       - Security
- */
- app.post('/loginSecurity', async (req, res) => {
-  let data = req.body;
-  res.send(await login1(client, data));
-});
- /**
+    /**
  * @swagger
  * /Adminlogin:
  *   post:
- *     summary: Login Admin
+ *     summary: User Login
  *     description: Authenticates a user's login credentials
  *     requestBody:
  *       required: true
@@ -184,9 +153,42 @@ async function run() {
  */
     app.post('/Adminlogin', async (req, res) => {
       let data = req.body;
-      res.send(await login(client, data));
+      res.send(await Adminlogin(client, data));
     });
 
+
+ /**
+ * @swagger
+ * /Securitylogin:
+ *   post:
+ *     summary: User Login
+ *     description: Authenticates a user's login credentials
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '401':
+ *         description: Invalid username or password
+ *       '404':
+ *         description: User not found
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Security
+ */
+  app.post('/Securitylogin', async (req, res) => {
+    let data = req.body;
+    res.send(await Securitylogin(client, data));
+  });
+ 
 /**
  * @swagger
  * /Securityregister:
@@ -330,7 +332,7 @@ async function run() {
 
 /** 
  *  @swagger
- * /Adminread:
+ * /read:
  *   get:
  *     summary: Retrieve data based on user role
  *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
@@ -448,9 +450,46 @@ run().catch(console.error);
     }
   async function decryptPassword(password, compare) {
       const match = await bcrypt.compare(password, compare)
-      return match
+      return match;
     
     }
+    function generateToken(user){
+      return jwt.sign(
+      user,    //this is an obj
+      'mypassword',           //password
+      { expiresIn: '1h' });  //expires after 1 hour
+    }
+    function authenticateToken(req, res, next) {
+      let header = req.headers.authorization;
+    
+      if (!header) {
+        return res.status(401).send('Unauthorized');
+      }
+    
+      let token = header.split(' ')[1];
+    
+      jwt.verify(token, 'mypassword', function(err, decoded) {
+        if (err) {
+          console.error(err);
+          return res.status(401).send('Invalid token');
+        }
+    
+        req.user = decoded;
+        next();
+      });
+    }
+    function generateVisitorPassIdentifier() {
+      const length = 8; // Length of the identifier
+      const charset = "abcdefghijklmnopqrstuvmxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Characters to include in the identifier
+      let identifier = "";
+    
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        identifier += charset[randomIndex];
+      }
+      return identifier;
+    }
+    
     //register admin 
   async function regAdmin(client, data) {
     const existingAdmin = await client
@@ -512,31 +551,7 @@ run().catch(console.error);
     }}else{
       return 'You are not allowed to register';}}
 
-  function generateToken(user){
-    return jwt.sign(
-    user,    //this is an obj
-    'mypassword',           //password
-    { expiresIn: '1h' });  //expires after 1 hour
-  }
-  function authenticateToken(req, res, next) {
-    let header = req.headers.authorization;
   
-    if (!header) {
-      return res.status(401).send('Unauthorized');
-    }
-  
-    let token = header.split(' ')[1];
-  
-    jwt.verify(token, 'mypassword', function(err, decoded) {
-      if (err) {
-        console.error(err);
-        return res.status(401).send('Invalid token');
-      }
-  
-      req.user = decoded;
-      next();
-    });
-  }
   //read from token and checking role to display 
   async function read(client, data) {
     if(data.role == 'Admin') {
@@ -554,11 +569,11 @@ run().catch(console.error);
   }
 
  //login 
-  async function login(client, data) {
+  async function Adminlogin(client, data) {
     const user = await client
       .db("Admin1")
       .collection("data")
-      .findOne({ username: data.username , role : "Admin"});
+      .findOne({ username: data.username });
   
     if (user) {
       const isPasswordMatch = await decryptPassword(data.password, user.password);
@@ -575,7 +590,7 @@ run().catch(console.error);
     }
   }
    //login 
-   async function login1(client, data) {
+   async function Securitylogin(client, data) {
     const user = await client
       .db("Security")
       .collection("data")
@@ -605,15 +620,3 @@ run().catch(console.error);
       return message
     } 
   }
-
-function generateVisitorPassIdentifier() {
-  const length = 8; // Length of the identifier
-  const charset = "abcdefghijklmnopqrstuvmxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Characters to include in the identifier
-  let identifier = "";
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    identifier += charset[randomIndex];
-  }
-  return identifier;
-}
