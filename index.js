@@ -40,21 +40,6 @@ const client = new MongoClient(uri, {
   }
 });
 
-async function signIn() {
-  const authCodeUrlParameters = {
-      scopes: ['openid', 'profile', 'User.Read'],
-      redirectUri: 'http://localhost', // Replace with your redirect URI
-  };
-
-  try {
-      const authResponse = await pca.acquireTokenByDeviceCode(authCodeUrlParameters);
-      console.log('Access Token:', authResponse.accessToken);
-
-      // Use the access token to call APIs or perform operations
-  } catch (error) {
-      console.error('Error acquiring token:', error);
-  }
-}
 // Connect the client to the server (optional starting in v4.7)
 async function run() {
     try {
