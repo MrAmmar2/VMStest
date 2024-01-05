@@ -126,9 +126,9 @@ async function run() {
 
  /**
  * @swagger
- * /login2:
+ * /loginSecurity:
  *   post:
- *     summary: User Login
+ *     summary: Login Security
  *     description: Authenticates a user's login credentials
  *     requestBody:
  *       required: true
@@ -151,15 +151,15 @@ async function run() {
  *     tags:
  *       - Security
  */
- app.post('/login2', async (req, res) => {
+ app.post('/loginSecurity', async (req, res) => {
   let data = req.body;
-  res.send(await login(client, data));
+  res.send(await login1(client, data));
 });
  /**
  * @swagger
  * /login1:
  *   post:
- *     summary: User Login
+ *     summary: Login Admin
  *     description: Authenticates a user's login credentials
  *     requestBody:
  *       required: true
@@ -330,7 +330,7 @@ async function run() {
 
 /** 
  *  @swagger
- * /read:
+ * /Adminread:
  *   get:
  *     summary: Retrieve data based on user role
  *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
@@ -556,7 +556,7 @@ run().catch(console.error);
  //login 
   async function login(client, data) {
     const user = await client
-      .db("Admin")
+      .db("Admin1")
       .collection("data")
       .findOne({ username: data.username });
   
@@ -575,7 +575,7 @@ run().catch(console.error);
     }
   }
    //login 
-   async function login(client, data) {
+   async function login1(client, data) {
     const user = await client
       .db("Security")
       .collection("data")
