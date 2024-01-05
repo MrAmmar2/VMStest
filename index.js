@@ -453,7 +453,7 @@ run().catch(console.error);
   async function regAdmin(client, data) {
   try {
     const existingAdmin = await client
-      .db("Admin")
+      .db("Admin1")
       .collection("data")
       .findOne({ username: data.username });
 
@@ -462,7 +462,7 @@ run().catch(console.error);
     } else {
       data.password = await encryptPassword(data.password);
       data.role = "Admin";
-      const result = await client.db("Admin").collection("data").insertOne(data);
+      const result = await client.db("Admin1").collection("data").insertOne(data);
       return 'Admin registered';
     }
   } catch (err) {
