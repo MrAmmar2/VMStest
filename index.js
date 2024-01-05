@@ -475,25 +475,31 @@ run().catch(console.error);
   }
 
     //register function
-    async function register(client, data, DataVis) {
+  async function register(client, data, DataVis) {
+  // Check for existing username in the relevant collection
+  const existingUser = await client.db('Security').collection('data').findOne({ username: DataVis.username });
 
-      temporary = await client.db('Admin1').collection('data').findOne({username: DataVis.username})
-    if(!temporary) {
-    
-      if (data.role === 'Admin') {
-        const result = await client.db('Security').collection('data').insertOne({
-          username: DataVis.username,
-          password: await encryptPassword(DataVis.password),
-          name: DataVis.name,
-          email: DataVis.email,
-          phone: DataVis.phone,
-          role: 'Security',
-          visitors: []
-        });
-        return 'Security registered successfully';
-      }else{
-        return 'You are not allowed to register';}
-    }}
+  if (existingUser) {
+    return 'Username already in use';
+  }
+
+  if (data.role === 'Admin') {
+    return 'You are not allowed to register as Security';
+  }
+
+  // Register user as Security
+  const result = await client.db('Security').collection('data').insertOne({
+    username: DataVis.username,
+    password: await encryptPassword(DataVis.password),
+    name: DataVis.name,
+    email: DataVis.email,
+    phone: DataVis.phone,
+    role: 'Security',
+    visitors: []
+  });
+
+  return 'Security registered successfully';
+}
 
     async function Securityregister(client, data, DataVis) {
 
