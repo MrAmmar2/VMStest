@@ -453,7 +453,7 @@ run().catch(console.error);
   
       if (isPasswordMatch) {
         
-        return Display(user.role);
+        return "yes";
         
       } else {
         return "Wrong password";
