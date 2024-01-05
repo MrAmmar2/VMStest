@@ -186,7 +186,6 @@ async function run() {
       let data = req.body;
       res.send(await login(client, data));
     });
-    
 /**
  * @swagger
  * /Securityregister:
@@ -220,8 +219,6 @@ async function run() {
  *               company:
  *                 type: string
  *     responses:
- *       '200':
- *         description: User registered successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '409':
@@ -271,8 +268,6 @@ app.post('/Securityregister', authenticateToken, async (req, res) => {
  *               company:
  *                 type: string
  *     responses:
- *       '200':
- *         description: User registered successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '409':
@@ -459,7 +454,7 @@ run().catch(console.error);
     const existingAdmin = await client
       .db("Admin")
       .collection("data")
-      .findOne({ username: data.username, role: "Admin" });
+      .findOne({ username: data.username });
   
     if (existingAdmin) {
       return "Admin already registered";
@@ -496,7 +491,6 @@ run().catch(console.error);
     if(!temporary) {
     if (data.role === 'Security') {
       const visitorPassIdentifier = generateVisitorPassIdentifier();
-      const currentCheckInTime = new Date();
       const result = await client.db('Visitor').collection('data').insertOne({
         name: DataVis.name,
         ic: DataVis.ic,
@@ -509,8 +503,6 @@ run().catch(console.error);
         security: data.username,
         passvisitor: visitorPassIdentifier
       });
-      
-      
       var message = "Visitor registered successfully\n Visitor Pass Identifier: " + visitorPassIdentifier ;
       return message}
      else {
@@ -549,15 +541,13 @@ run().catch(console.error);
       Admins = await client.db('Admin').collection('data').find({role:"Admin"}).next() //.next to read in object instead of array
       Security = await client.db('Security').collection('data').find({role:"Security"}).toArray()
       Visitors = await client.db('Visitor').collection('data').find({role:"Visitor"}).toArray()
-      PassVisitor = await client.db('Visitor').collection('PassVisitor').find().next()
-      return {Admins, Security, Visitors, PassVisitor}
+      return {Admins, Security, Visitors}
       }
   
     if (data.role == 'Security') {
       Security = await client.db('Security').collection('data').findOne({username: data.username})
       Visitors = await client.db('Visitor').collection('data').find({security: data.username}).toArray()   
-      PassVisitor = await client.db('Visitor').collection('PassVisitor').find({username: {$in:Security.visitors}}).toArray()
-      return {Security, Visitors, PassVisitor}
+      return {Security, Visitors}
       }
   }
 
@@ -613,79 +603,7 @@ run().catch(console.error);
       return message
     } 
   }
-  
 
-    // Check-in 
-    async function checkIn(client, data, DataVis) {
-      const usersCollection = client.db('Visitor').collection('data');
-    
-      const currentUser = await usersCollection.findOne({ PassVisitor: data.PassVisitor });
-    
-      if (!currentUser) {
-        return 'Visitor not found';
-      }
-    
-      if (currentUser.currentCheckIn) {
-        return 'Already Given The Pass';
-      }
-      const currentCheckInTime = new Date();
-    
-      const recordData = {
-        P: DataVis.recordID,
-        purpose: DataVis.purpose,
-        checkInTime: currentCheckInTime
-      };
-    
-      await recordsCollection.insertOne(recordData);
-    
-      await usersCollection.updateOne(
-        { username: data.username },
-        {
-          $set: { currentCheckIn: DataVis.recordID },
-          $push: { records: DataVis.recordID }
-        }
-      );
-    
-      return `You have checked in at '${currentCheckInTime}' with recordID '${DataVis.recordID}'`;
-    }
-  // Check-out operation
-  //Function to check out
-async function checkOut(client, data) {
-  const usersCollection = client.db('labdata').collection('data');
-  const recordsCollection = client.db('labdata').collection('Records');
-
-  const currentUser = await usersCollection.findOne({ username: data.username });
-
-  if (!currentUser) {
-    return 'User not found';
-  }
-
-  if (!currentUser.currentCheckIn) {
-    return 'You have not checked in yet, please check in first!!!';
-  }
-
-  const checkOutTime = new Date();
-
-  const updateResult = await recordsCollection.updateOne(
-    { recordID: currentUser.currentCheckIn },
-    { $set: { checkOutTime: checkOutTime } }
-  );
-
-  if (updateResult.modifiedCount === 0) {
-    return 'Failed to update check-out time. Please try again.';
-  }
-
-  const unsetResult = await usersCollection.updateOne(
-    { username: currentUser.username },
-    { $unset: { currentCheckIn: 1 } }
-  );
-
-  if (unsetResult.modifiedCount === 0) {
-    return 'Failed to check out. Please try again.';
-  }
-
-  return `You have checked out at '${checkOutTime}' with recordID '${currentUser.currentCheckIn}'`;
-}
 function generateVisitorPassIdentifier() {
   const length = 8; // Length of the identifier
   const charset = "abcdefghijklmnopqrstuvmxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Characters to include in the identifier
