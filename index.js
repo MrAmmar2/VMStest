@@ -451,20 +451,26 @@ run().catch(console.error);
     }
     //register admin 
   async function regAdmin(client, data) {
+  try {
     const existingAdmin = await client
       .db("Admin")
       .collection("data")
       .findOne({ username: data.username });
-  
+
     if (existingAdmin) {
       return "Admin already registered";
-    }else {
+    } else {
       data.password = await encryptPassword(data.password);
       data.role = "Admin";
-    const result = await client.db("Admin").collection("data").insertOne(data);
-    return 'Admin registered';
+      const result = await client.db("Admin").collection("data").insertOne(data);
+      return 'Admin registered';
     }
-      }
+  } catch (err) {
+    // Handle specific errors here
+    console.error("Error in regAdmin:", err);
+    return "An error occurred while registering admin";
+  }
+}
     //register function
     async function register(client, data, DataVis) {
 
