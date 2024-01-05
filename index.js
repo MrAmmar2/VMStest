@@ -88,7 +88,7 @@ async function run() {
 
 
     app.get('/', (req, res) => {
-       res.send(signIn())
+       res.send("Welcome To Visitor ")
     });
 
 
@@ -188,7 +188,57 @@ async function run() {
       let data = req.body;
       res.send(await login(client, data));
     });
+/**
+ * @swagger
+ * /Securityregister:
+ *   post:
+ *     summary: Register a user
+ *     description: Registers a user based on role (Admin or Security)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
 
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [Admin, Security]
+ *               ic:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               vehicleNo:
+ *                 type: string
+ *               department:
+ *                 type: string
+ *               company:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: User registered successfully
+ *       '401':
+ *         description: Unauthorized or Invalid token
+ *       '409':
+ *         description: Username already in use
+ *       '403':
+ *         description: Not allowed to register
+ *     tags:
+ *       - Admin
+ */
+
+app.post('/Securityregister', authenticateToken, async (req, res) => {
+  let data = req.user;
+  let DataVis = req.body;
+  res.send(await Adminregister(client, data, DataVis));
+});
 /**
  * @swagger
  * /Visitorregister:
@@ -238,9 +288,8 @@ async function run() {
     app.post('/Visitorregister', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis = req.body;
-      res.send(await register(client, data, DataVis));
+      res.send(await Securityregister(client, data, DataVis));
     });
-
 
 /** 
  *  @swagger
@@ -277,77 +326,53 @@ async function run() {
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - Data Retrieval
+ *       - Security
  */
-    app.get('/read', authenticateToken, async (req, res) => {
+app.get('/SecurityRead', authenticateToken, async (req, res) => {
+  let data = req.user;
+  res.send(await read(client, data));
+});
+
+/** 
+ *  @swagger
+ * /read:
+ *   get:
+ *     summary: Retrieve data based on user role
+ *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 Admins:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 Security:
+ *                   type: object
+ *                 Visitors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 Records:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       '401':
+ *         description: Unauthorized or Invalid token
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Admin
+ */
+    app.get('/AdminRead', authenticateToken, async (req, res) => {
       let data = req.user;
       res.send(await read(client, data));
-    });
-
-    
-/**
- * @swagger
- * /update:
- *   patch:
- *     summary: Update Visitor Information
- *     description: Allows a visitor to update their information (phone, vehicle number, department, company)
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               phone:
- *                 type: string
- *               vehicleNo:
- *                 type: string
- *               department:
- *                 type: string
- *               company:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Visitor information updated successfully
- *       '401':
- *         description: Unauthorized or Invalid token
- *       '403':
- *         description: Only visitors can update their information
- *       '500':
- *         description: Internal server error
- *     tags:
- *       - Visitor Information
- */
-    app.patch('/update', authenticateToken, async (req, res) => {
-      let data = req.user;
-      let DataVis=req.body;
-      res.send(await updateVisitorInformation(client, data,DataVis));
-    });
-/**
- * @swagger
- * /deleteVisitor:
- *   delete:
- *     summary: Delete Visitor
- *     description: Deletes a visitor's information and associated records
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: Visitor deleted successfully
- *       '401':
- *         description: Unauthorized or Invalid token
- *       '500':
- *         description: Internal server error
- *     tags:
- *       - Visitor Management
- */
-    app.delete('/deleteVisitor', authenticateToken, async (req, res) => {
-      let data = req.user;
-      res.send(await deleteVisitor(client, data));
     });
 
 /** 
@@ -355,7 +380,7 @@ async function run() {
  * /checkIn:
  *   post:
  *     summary: Check-in for Visitors
- *     description: Allows visitors to check-in to a location
+ *     description: Allows Security to check-in Visitor to a location
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -370,8 +395,6 @@ async function run() {
  *               purpose:
  *                 type: string
  *     responses:
- *       '200':
- *         description: Visitor checked in successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '403':
@@ -383,7 +406,7 @@ async function run() {
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - Check-in
+ *       - Visitor
  */
 
     app.post('/checkIn', authenticateToken, async (req, res) => {
@@ -401,8 +424,6 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
- *         description: Visitor checked out successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '404':
@@ -410,7 +431,7 @@ async function run() {
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - Check-out
+ *       - Visitor 
  */
     app.patch('/checkOut', authenticateToken, async (req, res) => {
       let data = req.user;
@@ -430,7 +451,7 @@ run().catch(console.error);
     const hash = await bcrypt.hash(password, saltRounds);
      return hash;
     }
-    async function decryptPassword(password, compare) {
+  async function decryptPassword(password, compare) {
       const match = await bcrypt.compare(password, compare)
       return match
     
@@ -438,11 +459,11 @@ run().catch(console.error);
     //register function
     async function register(client, data, DataVis) {
 
-      temporary = await client.db('labdata').collection('data').findOne({username: DataVis.username})
+      temporary = await client.db('Admin').collection('data').findOne({username: DataVis.username})
     if(!temporary) {
     
       if (data.role === 'Admin') {
-        const result = await client.db('labdata').collection('data').insertOne({
+        const result = await client.db('Admin').collection('data').insertOne({
           username: DataVis.username,
           password: await encryptPassword(DataVis.password),
           name: DataVis.name,
@@ -451,35 +472,38 @@ run().catch(console.error);
           visitors: []
         });
         return 'Security registered successfully';
-      }else
-    
-      if (data.role === 'Security') {
-        const result = await client.db('labdata').collection('data').insertOne({
-          username: DataVis.username,
-          password: await encryptPassword(DataVis.password),
-          name: DataVis.name,
-          ic: DataVis.ic,
-          email: DataVis.email,
-          phone: DataVis.phone,
-          vehicleNo: DataVis.vehicleNo,
-          department: DataVis.department,
-          company: DataVis.company,
-          role: 'Visitor',
-          security: data.username,
-          records: []
-        });
-    
-        const result1 = await client.db('labdata').collection('data').updateOne(
-          { username: data.username },
-          { $push: { visitors: DataVis.username } }
-        );
-        return 'Visitor registered successfully';
-      }} else {
-        return 'Username already in use, please enter another username'
-      }   
-    
-      return 'You are not allowed to register';
-    }
+      }else{
+        return 'You are not allowed to register';}
+    }}
+    async function Securityregister(client, data, DataVis) {
+
+      temporary = await client.db('Security').collection('data').findOne({username: DataVis.username})
+    if(!temporary) {
+    if (data.role === 'Security') {
+      const result = await client.db('Security').collection('data').insertOne({
+        username: DataVis.username,
+        password: await encryptPassword(DataVis.password),
+        name: DataVis.name,
+        ic: DataVis.ic,
+        email: DataVis.email,
+        phone: DataVis.phone,
+        vehicleNo: DataVis.vehicleNo,
+        department: DataVis.department,
+        company: DataVis.company,
+        role: 'Visitor',
+        security: data.username,
+        records: []
+      });
+      const result1 = await client.db('Security').collection('data').updateOne(
+        { username: data.username },
+        { $push: { visitors: DataVis.username } }
+      );
+      return 'Visitor registered successfully';}
+     else {
+      return 'Username already in use, please enter another username'
+    }}else{
+      return 'You are not allowed to register';}}
+
   function generateToken(user){
     return jwt.sign(
     user,    //this is an obj
@@ -508,24 +532,24 @@ run().catch(console.error);
   //read from token and checking role to display 
   async function read(client, data) {
     if(data.role == 'Admin') {
-      Admins = await client.db('labdata').collection('data').find({role:"Admin"}).next() //.next to read in object instead of array
-      Security = await client.db('labdata').collection('data').find({role:"Security"}).toArray()
-      Visitors = await client.db('labdata').collection('data').find({role:"Visitor"}).toArray()
-      Records = await client.db('labdata').collection('Records').find().next()
-      return {Admins, Security, Visitors, Records}
+      Admins = await client.db('Admin').collection('data').find({role:"Admin"}).next() //.next to read in object instead of array
+      Security = await client.db('Security').collection('data').find({role:"Security"}).toArray()
+      Visitors = await client.db('Visitor').collection('data').find({role:"Visitor"}).toArray()
+      PassVisitor = await client.db('Visitor').collection('PassVisitor').find().next()
+      return {Admins, Security, Visitors, PassVisitor}
       }
   
     if (data.role == 'Security') {
-      Security = await client.db('labdata').collection('data').findOne({username: data.username})
-      Visitors = await client.db('labdata').collection('data').find({security: data.username}).toArray()   
-      Records = await client.db('labdata').collection('Records').find({username: {$in:Security.visitors}}).toArray()
-      return {Security, Visitors, Records}
+      Security = await client.db('Security').collection('data').findOne({username: data.username})
+      Visitors = await client.db('Visitor').collection('data').find({security: data.username}).toArray()   
+      PassVisitor = await client.db('Visitor').collection('PassVisitor').find({username: {$in:Security.visitors}}).toArray()
+      return {Security, Visitors, PassVisitor}
       }
   }
   //register admin 
   async function regAdmin(client, data) {
   const existingAdmin = await client
-    .db("labdata")
+    .db("Admin")
     .collection("data")
     .findOne({ username: data.username, role: "Admin" });
 
@@ -534,14 +558,35 @@ run().catch(console.error);
   }else {
     data.password = await encryptPassword(data.password);
     data.role = "Admin";
-  const result = await client.db("labdata").collection("data").insertOne(data);
+  const result = await client.db("Admin").collection("data").insertOne(data);
   return 'Admin registered';
   }
     }
  //login 
   async function login(client, data) {
     const user = await client
-      .db("labdata")
+      .db("Admin")
+      .collection("data")
+      .findOne({ username: data.username });
+  
+    if (user) {
+      const isPasswordMatch = await decryptPassword(data.password, user.password);
+  
+      if (isPasswordMatch) {
+        
+        return Display(user.role);
+        
+      } else {
+        return "Wrong password";
+      }
+    } else {
+      return "User not found";
+    }
+  }
+   //login 
+   async function login(client, data) {
+    const user = await client
+      .db("Security")
       .collection("data")
       .findOne({ username: data.username });
   
@@ -570,39 +615,11 @@ run().catch(console.error);
     } 
   }
   
- //update visitor Info only visitor
-  async function updateVisitorInformation(client, data, DataVis) {
-    let result = null;  // Initialize result variable
-  
-    if (data.role == 'Security') {
-      result = await client
-        .db('labdata')
-        .collection('data')
-        .findOneAndUpdate(
-          { username: DataVis.username },
-          {
-            $set: {
-              phone: DataVis.phone,
-              vehicleNo: DataVis.vehicleNo,
-              department: DataVis.department,
-              company: DataVis.company,
-            }
-          }
-        );
-    }else{
-      return 'Only Security can update the information'
-    }
-    
-    if (result && result.ok && result.value) {
-      return 'Visitor information updated successfully';
-    } else {
-      return 'Failed to update visitor information';
-    }
-  }
+
     // Check-in 
     async function checkIn(client, data, DataVis) {
-      const usersCollection = client.db('labdata').collection('data');
-      const recordsCollection = client.db('labdata').collection('Records');
+      const usersCollection = client.db('Security').collection('data');
+      const recordsCollection = client.db('Visitor').collection('PassVisitor');
     
       const currentUser = await usersCollection.findOne({ username: data.username });
     
@@ -683,24 +700,4 @@ async function checkOut(client, data) {
 
   return `You have checked out at '${checkOutTime}' with recordID '${currentUser.currentCheckIn}'`;
 }
-//delete visitor function
-async function deleteVisitor(client, data) {
-  const usersCollection = client.db("labdata").collection("data");
-  const recordsCollection = client.db("labdata").collection("Records");
 
-  // Delete user document
-  const deleteResult = await usersCollection.deleteOne({ username: data.username });
-  if (deleteResult.deletedCount === 0) {
-    return "User not found";
-  }
-
-  // Delete related records
-  await recordsCollection.deleteMany({ username: data.username });
-
-  // Update visitors array in other users' documents
-  await usersCollection.updateMany(
-    { visitors: data.username },
-    { $pull: { visitors: data.username } }
-  );
-  return "Delete Successful";
-}
