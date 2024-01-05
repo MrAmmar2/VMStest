@@ -204,11 +204,11 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               name:
  *               username:
  *                 type: string
  *               password:
  *                 type: string
+ *               name:
  *                 type: string
  *               email:
  *                 type: string
