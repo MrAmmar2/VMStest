@@ -157,7 +157,7 @@ async function run() {
 });
  /**
  * @swagger
- * /login1:
+ * /Adminlogin:
  *   post:
  *     summary: Login Admin
  *     description: Authenticates a user's login credentials
@@ -558,7 +558,7 @@ run().catch(console.error);
     const user = await client
       .db("Admin1")
       .collection("data")
-      .findOne({ username: data.username });
+      .findOne({ username: data.username , role : "Admin"});
   
     if (user) {
       const isPasswordMatch = await decryptPassword(data.password, user.password);
