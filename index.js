@@ -205,21 +205,17 @@ async function run() {
  *             type: object
  *             properties:
  *               name:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
  *                 type: string
  *               email:
  *                 type: string
  *               role:
  *                 type: string
  *                 enum: [Admin, Security]
- *               ic:
- *                 type: string
  *               phone:
- *                 type: string
- *               vehicleNo:
- *                 type: string
- *               department:
- *                 type: string
- *               company:
  *                 type: string
  *     responses:
  *       '401':
