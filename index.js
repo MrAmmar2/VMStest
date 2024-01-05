@@ -113,9 +113,7 @@ async function run() {
  *                 type: string
  *               email:
  *                 type: string
-*     responses:
- *       '200':
- *         description: Admin registered successfully or already exists
+ *     responses:
  *       '500':
  *         description: Internal server error
  *     tags:
@@ -188,6 +186,7 @@ async function run() {
       let data = req.body;
       res.send(await login(client, data));
     });
+    
 /**
  * @swagger
  * /Securityregister:
@@ -203,7 +202,6 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
-
  *               name:
  *                 type: string
  *               email:
