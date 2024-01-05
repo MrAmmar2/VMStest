@@ -545,7 +545,7 @@ run().catch(console.error);
         security: data.username,
         passvisitor: visitorPassIdentifier
       });
-      var message = "Visitor registered successfully\n Visitor Pass Identifier: " + visitorPassIdentifier ;
+      var message = 'Visitor registered successfully\n Visitor Pass Identifier: '+ visitorPassIdentifier ;
       return message}
      else {
       return 'Username already in use, please enter another username'
@@ -571,11 +571,7 @@ run().catch(console.error);
 
  //login 
   async function Adminlogin(client, data) {
-    const user = await client
-      .db("Admin1")
-      .collection("data")
-      .findOne({ username: data.username });
-  
+    const user = await client.db('Admin1').collection('data').findOne({ username: data.username });
     if (user) {
       const isPasswordMatch = await decryptPassword(data.password, user.password);
   
