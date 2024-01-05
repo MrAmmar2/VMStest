@@ -237,7 +237,7 @@ async function run() {
 app.post('/Securityregister', authenticateToken, async (req, res) => {
   let data = req.user;
   let DataVis = req.body;
-  res.send(await Adminregister(client, data, DataVis));
+  res.send(await register(client, data, DataVis));
 });
 /**
  * @swagger
@@ -456,6 +456,22 @@ run().catch(console.error);
       return match
     
     }
+    //register admin 
+  async function regAdmin(client, data) {
+    const existingAdmin = await client
+      .db("Admin")
+      .collection("data")
+      .findOne({ username: data.username, role: "Admin" });
+  
+    if (existingAdmin) {
+      return "Admin already registered";
+    }else {
+      data.password = await encryptPassword(data.password);
+      data.role = "Admin";
+    const result = await client.db("Admin").collection("data").insertOne(data);
+    return 'Admin registered';
+    }
+      }
     //register function
     async function register(client, data, DataVis) {
 
@@ -468,6 +484,7 @@ run().catch(console.error);
           password: await encryptPassword(DataVis.password),
           name: DataVis.name,
           email: DataVis.email,
+          phone: DataVis.phone,
           role: 'Security',
           visitors: []
         });
@@ -480,9 +497,9 @@ run().catch(console.error);
       temporary = await client.db('Security').collection('data').findOne({username: DataVis.username})
     if(!temporary) {
     if (data.role === 'Security') {
-      const result = await client.db('Security').collection('data').insertOne({
-        username: DataVis.username,
-        password: await encryptPassword(DataVis.password),
+      const visitorPassIdentifier = generateVisitorPassIdentifier();
+      const currentCheckInTime = new Date();
+      const result = await client.db('Visitor').collection('data').insertOne({
         name: DataVis.name,
         ic: DataVis.ic,
         email: DataVis.email,
@@ -492,13 +509,12 @@ run().catch(console.error);
         company: DataVis.company,
         role: 'Visitor',
         security: data.username,
-        records: []
+        passvisitor: visitorPassIdentifier
       });
-      const result1 = await client.db('Security').collection('data').updateOne(
-        { username: data.username },
-        { $push: { visitors: DataVis.username } }
-      );
-      return 'Visitor registered successfully';}
+      
+      
+      var message = "Visitor registered successfully\n Visitor Pass Identifier: " + visitorPassIdentifier ;
+      return message}
      else {
       return 'Username already in use, please enter another username'
     }}else{
@@ -546,22 +562,7 @@ run().catch(console.error);
       return {Security, Visitors, PassVisitor}
       }
   }
-  //register admin 
-  async function regAdmin(client, data) {
-  const existingAdmin = await client
-    .db("Admin")
-    .collection("data")
-    .findOne({ username: data.username, role: "Admin" });
 
-  if (existingAdmin) {
-    return "Admin already registered";
-  }else {
-    data.password = await encryptPassword(data.password);
-    data.role = "Admin";
-  const result = await client.db("Admin").collection("data").insertOne(data);
-  return 'Admin registered';
-  }
-    }
  //login 
   async function login(client, data) {
     const user = await client
@@ -618,34 +619,21 @@ run().catch(console.error);
 
     // Check-in 
     async function checkIn(client, data, DataVis) {
-      const usersCollection = client.db('Security').collection('data');
-      const recordsCollection = client.db('Visitor').collection('PassVisitor');
+      const usersCollection = client.db('Visitor').collection('data');
     
-      const currentUser = await usersCollection.findOne({ username: data.username });
+      const currentUser = await usersCollection.findOne({ PassVisitor: data.PassVisitor });
     
       if (!currentUser) {
-        return 'User not found';
+        return 'Visitor not found';
       }
     
       if (currentUser.currentCheckIn) {
-        return 'Already checked in, please check out first!!!';
+        return 'Already Given The Pass';
       }
-    
-      if (data.role !== 'Visitor') {
-        return 'Only visitors can access check-in.';
-      }
-    
-      const existingRecord = await recordsCollection.findOne({ recordID: DataVis.recordID });
-    
-      if (existingRecord) {
-        return `The recordID '${DataVis.recordID}' is already in use. Please enter another recordID.`;
-      }
-    
       const currentCheckInTime = new Date();
     
       const recordData = {
-        username: data.username,
-        recordID: DataVis.recordID,
+        P: DataVis.recordID,
         purpose: DataVis.purpose,
         checkInTime: currentCheckInTime
       };
@@ -700,4 +688,14 @@ async function checkOut(client, data) {
 
   return `You have checked out at '${checkOutTime}' with recordID '${currentUser.currentCheckIn}'`;
 }
+function generateVisitorPassIdentifier() {
+  const length = 8; // Length of the identifier
+  const charset = "abcdefghijklmnopqrstuvmxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Characters to include in the identifier
+  let identifier = "";
 
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    identifier += charset[randomIndex];
+  }
+  return identifier;
+}
