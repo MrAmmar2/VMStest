@@ -453,7 +453,8 @@ run().catch(console.error);
   
       if (isPasswordMatch) {
         
-        return "yes";
+        return Display(user.role)," Token for " + data.role + ": " + generateToken(data);
+        
         
       } else {
         return "Wrong password";
@@ -483,7 +484,7 @@ run().catch(console.error);
       return "User not found";
     }
   }
-  
+
     //register function
     async function register(client, data, DataVis) {
 
@@ -551,7 +552,7 @@ run().catch(console.error);
   //output 
   function Display(data) {
     if(data == 'Admin') {
-      var message="You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n\n Token for " + data + ": " + generateToken(data);
+      var message="You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n"
       return message
     } else if (data == 'Security') {
       var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n\n Token for " + data +": " + generateToken(data);
