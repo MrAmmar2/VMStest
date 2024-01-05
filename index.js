@@ -113,18 +113,50 @@ async function run() {
  *                 type: string
  *               email:
  *                 type: string
- *     responses:
+*     responses:
+ *       '200':
+ *         description: Admin registered successfully or already exists
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - Admin Registration
+ *       - Admin
  */
     app.post('/regAdmin', async (req, res) => {
       let data = req.body;
       res.send(await regAdmin(client, data));
     });
 
-
+ /**
+ * @swagger
+ * /login2:
+ *   post:
+ *     summary: User Login
+ *     description: Authenticates a user's login credentials
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '401':
+ *         description: Invalid username or password
+ *       '404':
+ *         description: User not found
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Security
+ */
+ app.post('/login2', async (req, res) => {
+  let data = req.body;
+  res.send(await login(client, data));
+});
  /**
  * @swagger
  * /login1:
@@ -150,7 +182,7 @@ async function run() {
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - User Authentication
+ *       - Admin
  */
     app.post('/login1', async (req, res) => {
       let data = req.body;
@@ -159,7 +191,7 @@ async function run() {
 
 /**
  * @swagger
- * /register:
+ * /Visitorregister:
  *   post:
  *     summary: Register a user
  *     description: Registers a user based on role (Admin or Security)
@@ -172,10 +204,7 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
+
  *               name:
  *                 type: string
  *               email:
@@ -194,6 +223,8 @@ async function run() {
  *               company:
  *                 type: string
  *     responses:
+ *       '200':
+ *         description: User registered successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '409':
@@ -201,10 +232,10 @@ async function run() {
  *       '403':
  *         description: Not allowed to register
  *     tags:
- *       - Registration
+ *       - Security
  */
 
-    app.post('/register', authenticateToken, async (req, res) => {
+    app.post('/Visitorregister', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis = req.body;
       res.send(await register(client, data, DataVis));
@@ -280,6 +311,8 @@ async function run() {
  *               company:
  *                 type: string
  *     responses:
+ *       '200':
+ *         description: Visitor information updated successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '403':
@@ -303,6 +336,8 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
+ *       '200':
+ *         description: Visitor deleted successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '500':
@@ -335,6 +370,8 @@ async function run() {
  *               purpose:
  *                 type: string
  *     responses:
+ *       '200':
+ *         description: Visitor checked in successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '403':
@@ -364,6 +401,8 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
+ *       '200':
+ *         description: Visitor checked out successfully
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '404':
@@ -482,30 +521,23 @@ run().catch(console.error);
       Records = await client.db('labdata').collection('Records').find({username: {$in:Security.visitors}}).toArray()
       return {Security, Visitors, Records}
       }
-  
-    if (data.role == 'Visitor') {
-      Visitor = await client.db('labdata').collection('data').findOne({username: data.username})
-      Records = await client.db('labdata').collection('Records').find({recordID: {$in:Visitor.records}}).toArray()
-      return {Visitor, Records}
-    }
   }
   //register admin 
-async function regAdmin(client, data) {
+  async function regAdmin(client, data) {
   const existingAdmin = await client
     .db("labdata")
     .collection("data")
-    .findOne({ username: data.username , role: "Admin"});
+    .findOne({ username: data.username, role: "Admin" });
 
   if (existingAdmin) {
     return "Admin already registered";
-  } else {
+  }else {
     data.password = await encryptPassword(data.password);
-    // Adding the 'role' field to the data object before insertion
     data.role = "Admin";
-    const result = await client.db("labdata").collection("data").insertOne(data);
-    return 'Admin registered';
+  const result = await client.db("labdata").collection("data").insertOne(data);
+  return 'Admin registered';
   }
-}
+    }
  //login 
   async function login(client, data) {
     const user = await client
@@ -517,7 +549,9 @@ async function regAdmin(client, data) {
       const isPasswordMatch = await decryptPassword(data.password, user.password);
   
       if (isPasswordMatch) {
+        
         return Display(user.role);
+        
       } else {
         return "Wrong password";
       }
@@ -528,20 +562,19 @@ async function regAdmin(client, data) {
   //output 
   function Display(data) {
     if(data == 'Admin') {
-      var message= "You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n  Token for " + user.name + ": " + generateToken(user);
-      return message 
+      var message="You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n\n Token for " + user.name + ": " + generateToken(user);
+      return message
     } else if (data == 'Security') {
-      return "You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n"
-    } else if (data == 'Visitor') {
-      return "You are logged in as Visitor\n You can Access:\n 1. Check My Data and My Records\n 3. Update My Data\n 4. Check In\n 5. Check Out\n 6. Delete My Data"
-    }
+      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n\n Token for " + user.name +": " + generateToken(user);
+      return message
+    } 
   }
   
  //update visitor Info only visitor
   async function updateVisitorInformation(client, data, DataVis) {
     let result = null;  // Initialize result variable
   
-    if (data.role == 'Visitor') {
+    if (data.role == 'Security') {
       result = await client
         .db('labdata')
         .collection('data')
@@ -557,7 +590,7 @@ async function regAdmin(client, data) {
           }
         );
     }else{
-      return 'Only visitor can update the information'
+      return 'Only Security can update the information'
     }
     
     if (result && result.ok && result.value) {
