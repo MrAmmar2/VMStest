@@ -453,7 +453,7 @@ run().catch(console.error);
   
       if (isPasswordMatch) {
         
-        return Display(user.role)," Token for " + data.role + ": " + generateToken(data);
+        return Display(user.role)," Token for " + user.role + ": " + generateToken(user);
         
         
       } else {
