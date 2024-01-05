@@ -279,7 +279,7 @@ async function run() {
 
 /** 
  *  @swagger
- * /read:
+ * /Securityread:
  *   get:
  *     summary: Retrieve data based on user role
  *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
@@ -477,7 +477,7 @@ run().catch(console.error);
     //register function
     async function register(client, data, DataVis) {
 
-      temporary = await client.db('Security').collection('data').findOne({username: DataVis.username})
+      temporary = await client.db('Admin1').collection('data').findOne({username: DataVis.username})
     if(!temporary) {
     
       if (data.role === 'Admin') {
