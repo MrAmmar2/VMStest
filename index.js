@@ -88,7 +88,7 @@ async function run() {
 
 
     app.get('/', (req, res) => {
-       res.send("Welcome To Visitor ")
+       res.send('Welcome To Visitor Management')
     });
 
 
@@ -186,6 +186,7 @@ async function run() {
       let data = req.body;
       res.send(await login(client, data));
     });
+
 /**
  * @swagger
  * /Securityregister:
@@ -229,11 +230,12 @@ async function run() {
  *       - Admin
  */
 
-app.post('/Securityregister', authenticateToken, async (req, res) => {
-  let data = req.user;
-  let DataVis = req.body;
-  res.send(await register(client, data, DataVis));
-});
+    app.post('/Securityregister', authenticateToken, async (req, res) => {
+      let data = req.user;
+      let DataVis = req.body;
+      res.send(await register(client, data, DataVis));
+    });
+
 /**
  * @swagger
  * /Visitorregister:
@@ -321,10 +323,10 @@ app.post('/Securityregister', authenticateToken, async (req, res) => {
  *     tags:
  *       - Security
  */
-app.get('/SecurityRead', authenticateToken, async (req, res) => {
-  let data = req.user;
-  res.send(await read(client, data));
-});
+    app.get('/SecurityRead', authenticateToken, async (req, res) => {
+      let data = req.user;
+      res.send(await read(client, data));
+    });
 
 /** 
  *  @swagger
@@ -451,34 +453,28 @@ run().catch(console.error);
     }
     //register admin 
   async function regAdmin(client, data) {
-  try {
     const existingAdmin = await client
       .db("Admin1")
       .collection("data")
       .findOne({ username: data.username });
-
+  
     if (existingAdmin) {
       return "Admin already registered";
-    } else {
+    }else {
       data.password = await encryptPassword(data.password);
       data.role = "Admin";
       const result = await client.db("Admin1").collection("data").insertOne(data);
       return 'Admin registered';
     }
-  } catch (err) {
-    // Handle specific errors here
-    console.error("Error in regAdmin:", err);
-    return "An error occurred while registering admin";
-  }
-}
+      }
     //register function
     async function register(client, data, DataVis) {
 
-      temporary = await client.db('Admin').collection('data').findOne({username: DataVis.username})
+      temporary = await client.db('Admin1').collection('data').findOne({username: DataVis.username})
     if(!temporary) {
     
       if (data.role === 'Admin') {
-        const result = await client.db('Admin').collection('data').insertOne({
+        const result = await client.db('Security').collection('data').insertOne({
           username: DataVis.username,
           password: await encryptPassword(DataVis.password),
           name: DataVis.name,
@@ -544,7 +540,7 @@ run().catch(console.error);
   //read from token and checking role to display 
   async function read(client, data) {
     if(data.role == 'Admin') {
-      Admins = await client.db('Admin').collection('data').find({role:"Admin"}).next() //.next to read in object instead of array
+      Admins = await client.db('Admin1').collection('data').find({role:"Admin"}).next() //.next to read in object instead of array
       Security = await client.db('Security').collection('data').find({role:"Security"}).toArray()
       Visitors = await client.db('Visitor').collection('data').find({role:"Visitor"}).toArray()
       return {Admins, Security, Visitors}
