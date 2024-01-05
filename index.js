@@ -182,7 +182,7 @@ async function run() {
  *     tags:
  *       - Admin
  */
-    app.post('/login1', async (req, res) => {
+    app.post('/Adminlogin', async (req, res) => {
       let data = req.body;
       res.send(await login(client, data));
     });
