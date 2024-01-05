@@ -372,68 +372,6 @@ async function run() {
       res.send(await read(client, data));
     });
 
-/** 
- * @swagger
- * /checkIn:
- *   post:
- *     summary: Check-in for Visitors
- *     description: Allows Security to check-in Visitor to a location
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               recordID:
- *                 type: string
- *               purpose:
- *                 type: string
- *     responses:
- *       '401':
- *         description: Unauthorized or Invalid token
- *       '403':
- *         description: Only visitors can check-in
- *       '404':
- *         description: User not found or already checked in
- *       '409':
- *         description: RecordID already in use
- *       '500':
- *         description: Internal server error
- *     tags:
- *       - Visitor
- */
-
-    app.post('/checkIn', authenticateToken, async (req, res) => {
-      let data = req.user;
-      let DataVis = req.body;
-      res.send(await checkIn(client, data, DataVis));
-    });
-    
-/**
- * @swagger
- * /checkOut:
- *   patch:
- *     summary: Check-out for Visitors
- *     description: Allows visitors to check-out from a location
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '401':
- *         description: Unauthorized or Invalid token
- *       '404':
- *         description: User not found or not checked in
- *       '500':
- *         description: Internal server error
- *     tags:
- *       - Visitor 
- */
-    app.patch('/checkOut', authenticateToken, async (req, res) => {
-      let data = req.user;
-      res.send(await checkOut(client, data));
-    });
 } catch (e) {
     console.error(e);
 
@@ -506,6 +444,46 @@ run().catch(console.error);
       return 'Admin registered';
     }
       }
+
+       //login 
+  async function Adminlogin(client, data) {
+    const user = await client.db('Admin1').collection('data').findOne({ username: data.username });
+    if (user) {
+      const isPasswordMatch = await decryptPassword(data.password, user.password);
+  
+      if (isPasswordMatch) {
+        
+        return Display(user.role);
+        
+      } else {
+        return "Wrong password";
+      }
+    } else {
+      return "User not found";
+    }
+  }
+   //login 
+   async function Securitylogin(client, data) {
+    const user = await client
+      .db("Security")
+      .collection("data")
+      .findOne({ username: data.username });
+  
+    if (user) {
+      const isPasswordMatch = await decryptPassword(data.password, user.password);
+  
+      if (isPasswordMatch) {
+        
+        return Display(user.role);
+        
+      } else {
+        return "Wrong password";
+      }
+    } else {
+      return "User not found";
+    }
+  }
+  
     //register function
     async function register(client, data, DataVis) {
 
@@ -569,44 +547,7 @@ run().catch(console.error);
       }
   }
 
- //login 
-  async function Adminlogin(client, data) {
-    const user = await client.db('Admin1').collection('data').findOne({ username: data.username });
-    if (user) {
-      const isPasswordMatch = await decryptPassword(data.password, user.password);
-  
-      if (isPasswordMatch) {
-        
-        return Display(user.role);
-        
-      } else {
-        return "Wrong password";
-      }
-    } else {
-      return "User not found";
-    }
-  }
-   //login 
-   async function Securitylogin(client, data) {
-    const user = await client
-      .db("Security")
-      .collection("data")
-      .findOne({ username: data.username });
-  
-    if (user) {
-      const isPasswordMatch = await decryptPassword(data.password, user.password);
-  
-      if (isPasswordMatch) {
-        
-        return Display(user.role);
-        
-      } else {
-        return "Wrong password";
-      }
-    } else {
-      return "User not found";
-    }
-  }
+
   //output 
   function Display(data) {
     if(data == 'Admin') {
