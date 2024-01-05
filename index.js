@@ -128,7 +128,7 @@ async function run() {
  * @swagger
  * /Adminlogin:
  *   post:
- *     summary: User Login
+ *     summary: Admin Login
  *     description: Authenticates a user's login credentials
  *     requestBody:
  *       required: true
@@ -526,6 +526,7 @@ run().catch(console.error);
       }else{
         return 'You are not allowed to register';}
     }}
+
     async function Securityregister(client, data, DataVis) {
 
       temporary = await client.db('Security').collection('data').findOne({username: DataVis.username})
@@ -613,10 +614,10 @@ run().catch(console.error);
   //output 
   function Display(data) {
     if(data == 'Admin') {
-      var message="You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n\n Token for " + user.name + ": " + generateToken(user);
+      var message="You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n\n Token for " + data.name + ": " + generateToken(data);
       return message
     } else if (data == 'Security') {
-      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n\n Token for " + user.name +": " + generateToken(user);
+      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n\n Token for " + data.name +": " + generateToken(data);
       return message
     } 
   }
