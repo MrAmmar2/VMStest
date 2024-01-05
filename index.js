@@ -212,9 +212,6 @@ async function run() {
  *                 type: string
  *               email:
  *                 type: string
- *               role:
- *                 type: string
- *                 enum: [Admin, Security]
  *               phone:
  *                 type: string
  *     responses:
@@ -249,14 +246,10 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
-
  *               name:
  *                 type: string
  *               email:
  *                 type: string
- *               role:
- *                 type: string
- *                 enum: [Admin, Security]
  *               ic:
  *                 type: string
  *               phone:
@@ -484,7 +477,7 @@ run().catch(console.error);
     //register function
     async function register(client, data, DataVis) {
 
-      temporary = await client.db('Admin1').collection('data').findOne({username: DataVis.username})
+      temporary = await client.db('Security').collection('data').findOne({username: DataVis.username})
     if(!temporary) {
     
       if (data.role === 'Admin') {
@@ -517,7 +510,7 @@ run().catch(console.error);
         department: DataVis.department,
         company: DataVis.company,
         role: 'Visitor',
-        security: data.username,
+        securityNumber: data.phone,
         passvisitor: visitorPassIdentifier
       });
       var message = 'Visitor registered successfully\n Visitor Pass Identifier: '+ visitorPassIdentifier ;
