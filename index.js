@@ -8,24 +8,6 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const { PublicClientApplication } = require('@azure/msal-node');
-const msalConfig = {
-  auth: {
-      clientId: 'YOUR_CLIENT_ID', // Replace with your Azure AD app's client ID
-      authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID', // Replace with your Azure AD tenant ID
-  },
-  system: {
-      loggerOptions: {
-          loggerCallback(loglevel, message, containsPii) {
-              console.log(message);
-          },
-          piiLoggingEnabled: false,
-          logLevel: 1,
-      },
-  },
-};
-const pca = new PublicClientApplication(msalConfig);
-
 const options = {
   definition: {
     openapi: '3.0.0',
