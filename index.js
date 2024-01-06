@@ -431,7 +431,7 @@ run().catch(console.error);
   
       if (isPasswordMatch) {
         
-        return Display(user.role);
+        return Display(user.role),"\n Token for " + user.role +": " + generateToken(user);
         
       } else {
         return "Wrong password";
@@ -464,11 +464,11 @@ run().catch(console.error);
 
     async function Securityregister(client, data, DataVis) {
 
-      temporary = await client.db('Security').collection('data').findOne({username: DataVis.username})
+      temporary = await client.db('Database').collection('PassVisitor').findOne({passvisitor: DataVis.passvisitor})
     if(!temporary) {
     if (data.role === 'Security') {
       const visitorPassIdentifier = generateVisitorPassIdentifier();
-      const result = await client.db('Visitor').collection('data').insertOne({
+      const result = await client.db('Database').collection('PassVisitor').insertOne({
         name: DataVis.name,
         ic: DataVis.ic,
         email: DataVis.email,
@@ -491,15 +491,15 @@ run().catch(console.error);
   //read from token and checking role to display 
   async function read(client, data) {
     if(data.role == 'Admin') {
-      Admins = await client.db('Admin1').collection('data').find({role:"Admin"}).next() //.next to read in object instead of array
-      Security = await client.db('Security').collection('data').find({role:"Security"}).toArray()
-      Visitors = await client.db('Visitor').collection('data').find({role:"Visitor"}).toArray()
+      Admins = await client.db('Database').collection('admin1').find({role:"Admin"}).next() //.next to read in object instead of array
+      Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
+      Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
       return {Admins, Security, Visitors}
       }
   
     if (data.role == 'Security') {
-      Security = await client.db('Security').collection('data').findOne({username: data.username})
-      Visitors = await client.db('Visitor').collection('data').find({security: data.username}).toArray()   
+      Security = await client.db('Database').collection('Security').findOne({username: data.username})
+      Visitors = await client.db('Database').collection('PassVisitor').find({security: data.username}).toArray()   
       return {Security, Visitors}
       }
   }
@@ -511,7 +511,7 @@ run().catch(console.error);
       var message="You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n"
       return message
     } else if (data == 'Security') {
-      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n\n Token for " + data +": " + generateToken(data);
+      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n"
       return message
     } 
   }
