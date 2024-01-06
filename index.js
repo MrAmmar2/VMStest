@@ -684,7 +684,7 @@ run().catch(console.error);
   
     if (data.role == 'Security') {
       Visitors = await client.db('Database').collection('PassVisitor').find({security: data.username}).toArray()   
-      return {Security, Visitors}
+      return { Visitors}
       }
   }
   //output 
