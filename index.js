@@ -217,15 +217,9 @@ async function run() {
  *                 type: string
  *               email:
  *                 type: string
- *               ic:
- *                 type: string
  *               phone:
  *                 type: string
  *               vehicleNo:
- *                 type: string
- *               department:
- *                 type: string
- *               company:
  *                 type: string
  *     responses:
  *       '401':
@@ -328,6 +322,42 @@ async function run() {
       res.send(await read(client, data));
     });
 
+/**
+ * @swagger
+ * /RetrieveSecurityNumber:
+ *   post:
+ *     summary: Retrieve Security Phone Number by Visitor Pass
+ *     description: Retrieves the Security Phone Number using the Visitor Pass (Admin access only)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               passvisitor:
+ *                 type: string
+ *                 description: Visitor Pass to retrieve Security Phone Number
+ *     responses:
+ *       '401':
+ *         description: Unauthorized or Invalid token
+ *       '403':
+ *         description: Forbidden access
+ *       '404':
+ *         description: Visitor pass not found or Security not found
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Admin
+ */
+    app.post('/RetrieveSecurityNumber',authenticateToken,async (req,res) =>{
+      let data =req.user;
+      let visitorPass = req.body;
+      res.send(await getSecurityPhoneByVisitorPass(client, data, visitorPass))
+    });
+
 } catch (e) {
     console.error(e);
 
@@ -373,8 +403,8 @@ run().catch(console.error);
       });
     }
     function generateVisitorPassIdentifier() {
-      const length = 8; // Length of the identifier
-      const charset = "abcdefghijklmnopqrstuvmxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Characters to include in the identifier
+      const length = 10; // Length of the identifier
+      const charset = "abcdefghijklmnopqrstuvmxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"; // Characters to include in the identifier
       let identifier = "";
     
       for (let i = 0; i < length; i++) {
@@ -470,17 +500,14 @@ run().catch(console.error);
       const visitorPassIdentifier = generateVisitorPassIdentifier();
       const result = await client.db('Database').collection('PassVisitor').insertOne({
         name: DataVis.name,
-        ic: DataVis.ic,
         email: DataVis.email,
         phone: DataVis.phone,
         vehicleNo: DataVis.vehicleNo,
-        department: DataVis.department,
-        company: DataVis.company,
         role: 'Visitor',
         securityNumber: data.phone,
         passvisitor: visitorPassIdentifier
       });
-      var message = 'Visitor registered successfully\n Visitor Pass Identifier: '+ visitorPassIdentifier ;
+      var message = 'Visitor registered successfully\n Visitor Pass : '+ visitorPassIdentifier ;
       return message}
      else {
       return 'Username already in use, please enter another username'
@@ -514,4 +541,35 @@ run().catch(console.error);
       var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n"
       return message
     } 
+  }
+
+  async function getSecurityPhoneByVisitorPass(client, data, visitorPass) {
+    try {
+      if (data.role !== 'Admin') {
+        return 'Unauthorized access'; // Return a message for unauthorized access
+      }
+  
+      const visitor = await client
+        .db('Database')
+        .collection('PassVisitor')
+        .findOne({ passvisitor: visitorPass });
+  
+      if (visitor) {
+        const security = await client
+          .db('Database')
+          .collection('Security')
+          .findOne({ username: visitor.securityNumber });
+  
+        if (security) {
+          return security.phone; // Return the security phone number
+        } else {
+          return 'Security not found';
+        }
+      } else {
+        return 'Visitor pass not found';
+      }
+    } catch (error) {
+      console.error('Error retrieving security phone:', error);
+      return 'Error retrieving security phone';
+    }
   }
