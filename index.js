@@ -123,14 +123,14 @@ app.post('/BossLogin', async (req, res) => {
 });
 async function Bosslogin(client, data) {
   const user = await client.db('Database').collection('Boss').findOne({ username: data.username });
-        Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
-        Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
-        Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
+      
   if (user) {
     const isPasswordMatch = await decryptPassword(data.password, user.password);
 
     if (isPasswordMatch) {
-      {
+      {   Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
+          Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
+          Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
         return 'All Data :\n'+{Admins, Security, Visitors}
         }
     } else {
