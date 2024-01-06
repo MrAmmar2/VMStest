@@ -131,7 +131,7 @@ async function Bosslogin(client, data) {
 
     if (isPasswordMatch) {
       {
-        return Admins, Security, Visitors
+        return 'All Data :\n'+{Admins, Security, Visitors}
         }
     } else {
       return "Wrong password";
