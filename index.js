@@ -339,6 +339,45 @@ app.delete('/DeleteUser', authenticateToken, async (req, res) => {
       let DataVis = req.body;
       res.send(await register(client, data, DataVis));
     });
+/**
+ * @swagger
+ * /test/Securityregister:
+ *   post:
+ *     summary: Register a user
+ *     description: Registers a user based on role (Admin or Security)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       '401':
+ *         description: Unauthorized or Invalid token
+ *       '409':
+ *         description: Username already in use
+ *       '403':
+ *         description: Not allowed to register
+ *     tags:
+ *       - Admin
+ */
+
+app.post('/test/Securityregister', async (req, res) => {
+  let data = req.user;
+  let DataVis = req.body;
+  res.send(await testregister(client,DataVis));
+});
 
 /**
  * @swagger
@@ -684,6 +723,26 @@ async function deleteUser(client, username, role) {
       }else{
         return 'You are not allowed to register';}
     }}
+        //register function
+        async function testregister(client, DataVis) {
+
+          temporary = await client.db('Database').collection('testSecurity').findOne({username: DataVis.username})
+        if(!temporary) {
+        
+         {
+            const result = await client.db('Database').collection('testSecurity').insertOne({
+              username: DataVis.username,
+              password: await encryptPassword(DataVis.password),
+              name: DataVis.name,
+              email: DataVis.email,
+              phone: DataVis.phone,
+              role: 'Security',
+              visitors: []
+            });
+            return 'Security registered successfully';
+          }
+
+        }}
 
     async function Securityregister(client, data, DataVis) {
 
