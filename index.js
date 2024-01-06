@@ -605,31 +605,21 @@ run().catch(console.error);
       return 'Error retrieving security phone';
     }
   }
-  async function getVisPassByVisID(client, data, visitorPass) {
+  async function getVisPassByVisID(client, data, visitorData) {
     try {
-  
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
-        .findOne({ VisitorID: visitorPass.VisitorID });
+        .findOne({ VisitorID: visitorData.VisitorID });
   
       if (visitor) {
-        const passvisitor = await client
-          .db('Database')
-          .collection('PassVisitor')
-          .findOne({ passvisitor: passvisitor.passvisitor });
-  
-        if (passvisitor) {
-          return "Visitor Pass : " + passvisitor.passvisitor; // Return the security phone number
-        } else {
-          return 'Visitor Pass not found';
-        }
+        return `Visitor Pass: ${visitor.passvisitor}`;
       } else {
         return 'Visitor ID not found';
       }
     } catch (error) {
-      console.error('Error retrieving security phone:', error);
-      return 'Error retrieving security phone';
+      console.error('Error retrieving visitor pass:', error);
+      return 'Error retrieving visitor pass';
     }
   }
   // Function to generate a visitor ID
