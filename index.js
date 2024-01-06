@@ -329,27 +329,6 @@ app.get('/BossRead', authenticateToken, async (req, res) => {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
- *         description: Data retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 Admins:
- *                   type: array
- *                   items:
- *                     type: object
- *                 Security:
- *                   type: object
- *                 Visitors:
- *                   type: array
- *                   items:
- *                     type: object
- *                 Records:
- *                   type: array
- *                   items:
- *                     type: object
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '500':
@@ -371,27 +350,6 @@ app.get('/BossRead', authenticateToken, async (req, res) => {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
- *         description: Data retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 Admins:
- *                   type: array
- *                   items:
- *                     type: object
- *                 Security:
- *                   type: object
- *                 Visitors:
- *                   type: array
- *                   items:
- *                     type: object
- *                 Records:
- *                   type: array
- *                   items:
- *                     type: object
  *       '401':
  *         description: Unauthorized or Invalid token
  *       '500':
@@ -737,9 +695,27 @@ run().catch(console.error);
         .db('Database')
         .collection('PassVisitor')
         .findOne({ visitorID: visitorData.VisitorID });
-  
+
+        const existingRetrieve = await recordsCollection.findOne({  });
+      
+        if (existingRetrieve) {
+          return `The retrieve pass on '${visitorData.currentRetrieve}' may ask the security to help!!`;
+        }
+        const checkInTime = new Date();
+        const recordData = {
+          checkInTime: currentCheckInTime
+        };
+        await recordsCollection.insertOne(recordData);
+        await usersCollection.updateOne(
+          { visitorID: visitorData.visitorID },
+          {
+            $set: { currentRetrieve: checkInTime }
+          }
+          );
+        
+          
       if (visitor) {
-        return `Visitor Pass: ${visitor.passvisitor}`;
+        return `Visitor Pass: ${visitor.passvisitor}\nYou have retrieved it at '${currentCheckInTime}'`;
       } else {
         return 'Visitor ID not found';
       }
