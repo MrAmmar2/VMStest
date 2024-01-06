@@ -384,9 +384,8 @@ async function run() {
  *       - Visitor
  */
     app.post('/RetrieveVisitorPass',async (req,res) =>{
-      let data =req.user;
       let visitorPass = req.body;
-      res.send(await getVisPassByVisID(client, data, visitorPass))
+      res.send(await getVisPassByVisID(client,visitorPass))
     });
     
 } catch (e) {
@@ -605,7 +604,7 @@ run().catch(console.error);
       return 'Error retrieving security phone';
     }
   }
-  async function getVisPassByVisID(client, data, visitorData) {
+  async function getVisPassByVisID(client,visitorData) {
     try {
       const visitor = await client
         .db('Database')
