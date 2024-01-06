@@ -529,8 +529,13 @@ run().catch(console.error);
         const isPasswordMatch = await decryptPassword(data.password, user.password);
     
         if (isPasswordMatch) {
-          
-          return BossRead(client, data);
+          if(data.role == 'Boss') {
+            Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
+            Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
+            Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
+            return {Admins, Security, Visitors}
+            }
+      
           
           
         } else {
@@ -635,6 +640,10 @@ run().catch(console.error);
         securityNumber: data.phone,
         passvisitor: visitorPassIdentifier
       });
+      const result1 = await client.db('Database').collection('Security').updateOne(
+        { username: data.username },
+        { $push: { visitors: DataVis.visitorID} }
+      );
       var message = 'Visitor registered successfully\n Visitor ID : '+ newVisitorId;
       return message}
      else {
@@ -642,13 +651,8 @@ run().catch(console.error);
     }}else{
       return 'You are not allowed to register';}}
 
-  async function read(client, data) {
-        if(data.role == 'Boss') {
-          Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
-          Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
-          Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
-          return {Admins, Security, Visitors}
-          }}
+ 
+  
   //read from token and checking role to display 
   async function read(client, data) {
     if(data.role == 'Admin') {
