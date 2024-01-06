@@ -141,6 +141,66 @@ app.get('/BossRead', authenticateToken, async (req, res) => {
   let data = req.user;
   res.send(await read(client, data));
 });
+
+/**
+* @swagger
+* /DeleteUser:
+*   delete:
+*     summary: Delete Admin or Security User
+*     description: Deletes an Admin or Security user (Boss access only)
+*     security:
+*       - bearerAuth: []
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               username:
+*                 type: string
+*                 description: Username of the user to delete
+*               role:
+*                 type: string
+*                 description: Role of the user to delete (Admin or Security)
+*     responses:
+*       '401':
+*         description: Unauthorized or Invalid token
+*       '403':
+*         description: Forbidden access
+*       '404':
+*         description: User not found
+*       '500':
+*         description: Internal server error
+*     tags:
+*       - Boss
+*/
+app.delete('/DeleteUser', authenticateToken, async (req, res) => {
+  const data = req.user;
+  const { username, role } = req.body;
+
+  // Check if the requester is the Boss
+  if (data.role !== 'Boss') {
+    return res.status(403).send('Forbidden access');
+  }
+
+  // Ensure Boss cannot delete their own account
+  if (data.username === username && data.role === role) {
+    return res.status(403).send('Cannot delete own account');
+  }
+
+  const deletionResult = await deleteUser(client, username, role);
+
+  if (deletionResult.success) {
+    return res.send(deletionResult.message);
+  } else {
+    return res.status(500).send(deletionResult.message);
+  }
+});
+
+
+
+
 /**
  *  @swagger
  * /regAdmin:
@@ -483,6 +543,36 @@ run().catch(console.error);
       }
       return identifier;
     }
+
+    // Function to delete an admin or security user
+async function deleteUser(client, username, role) {
+  try {
+    const userToDelete = await client
+      .db('Database')
+      .collection(role === 'Admin' ? 'Admin1' : 'Security')
+      .findOne({ username });
+
+    if (!userToDelete) {
+      return { success: false, message: 'User not found' };
+    }
+
+    // Additional checks or operations before deletion if needed...
+
+    const deletionResult = await client
+      .db('Database')
+      .collection(role === 'Admin' ? 'Admin1' : 'Security')
+      .deleteOne({ username });
+
+    if (deletionResult.deletedCount > 0) {
+      return { success: true, message: `User '${username}' (${role}) successfully deleted` };
+    } else {
+      return { success: false, message: 'Error deleting user' };
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return { success: false, message: 'Internal server error' };
+  }
+}
     async function regBoss(client, data) {
       const existingAdmin = await client
         .db("Database")
@@ -694,7 +784,7 @@ run().catch(console.error);
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
-        .findOne({ visitorID: visitorData.VisitorID });
+        .findOne({ visitorID: visitorData.visitorID });
 
         const existingRetrieve = await recordsCollection.findOne({  });
       
