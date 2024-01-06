@@ -823,7 +823,7 @@ async function deleteUser(client, username, role) {
         const security = await client
           .db('Database')
           .collection('Security')
-          .findOne({ security: visitor.securityusername });
+          .findOne({ security: visitor.security });
   
         if (security) {
           return "Security Phone Number : " + security.phone +"\nSecurity Username:"+ security.username; // Return the security phone number
@@ -838,14 +838,14 @@ async function deleteUser(client, username, role) {
       return 'Error retrieving security phone';
     }
   }
+       
   async function getVisPassByVisID(client,visitorData) {
     try {
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
         .findOne({ visitorID: visitorData.VisitorID });
-
-      /*  const existingRetrieve = await recordsCollection.findOne({  });
+ /*  const existingRetrieve = await recordsCollection.findOne({  });
       
         if (existingRetrieve) {
           return `The retrieve pass on '${visitorData.currentRetrieve}' may ask the security to help!!`;
@@ -862,6 +862,7 @@ async function deleteUser(client, username, role) {
           }
           );\nYou have retrieved it at '${currentCheckInTime}'*/
    
+
       if (visitor) {
         return `Visitor Pass: ${visitor.passvisitor} `;
       } else {
