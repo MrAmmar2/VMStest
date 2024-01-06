@@ -784,7 +784,7 @@ async function deleteUser(client, username, role) {
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
-        .findOne({ visitorID: visitorData.visitorID });
+        .findOne({ visitorID: visitorData.VisitorID });
 
       /*  const existingRetrieve = await recordsCollection.findOne({  });
       
@@ -802,8 +802,7 @@ async function deleteUser(client, username, role) {
             $set: { currentRetrieve: checkInTime }
           }
           );\nYou have retrieved it at '${currentCheckInTime}'*/
-        
-          
+   
       if (visitor) {
         return `Visitor Pass: ${visitor.passvisitor} `;
       } else {
