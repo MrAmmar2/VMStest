@@ -383,7 +383,7 @@ async function run() {
  *     tags:
  *       - Visitor
  */
-    app.post('/RetrieveVisitorPass',authenticateToken,async (req,res) =>{
+    app.post('/RetrieveVisitorPass',async (req,res) =>{
       let data =req.user;
       let visitorPass = req.body;
       res.send(await getVisPassByVisID(client, data, visitorPass))
