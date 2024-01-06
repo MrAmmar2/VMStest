@@ -552,7 +552,7 @@ run().catch(console.error);
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
-        .findOne({ passvisitor: visitorPass });
+        .findOne({ passvisitor: visitorPass.passvisitor });
   
       if (visitor) {
         const security = await client
