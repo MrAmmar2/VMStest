@@ -58,6 +58,69 @@ async function run() {
        res.send('Welcome To Visitor Management')
     });
 
+/**
+ *  @swagger
+ * /regBoss:
+ *   post:
+ *     summary: Register an Admin
+ *     description: Registers an Admin if not already registered
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Boss
+ */
+app.post('/regBoss', async (req, res) => {
+  let data = req.body;
+  res.send(await regBoss(client, data));
+});
+
+/**
+* @swagger
+* /BossLogin:
+*   post:
+*     summary: Admin Login
+*     description: Authenticates a user's login credentials
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               username:
+*                 type: string
+*               password:
+*                 type: string
+*     responses:
+*       '401':
+*         description: Invalid username or password
+*       '404':
+*         description: User not found
+*       '500':
+*         description: Internal server error
+*     tags:
+*       - Boss
+*/
+app.post('/BossLogin', async (req, res) => {
+  let data = req.body;
+  res.send(await Bosslogin(client, data));
+});
 
 /**
  *  @swagger
@@ -443,7 +506,40 @@ run().catch(console.error);
       }
       return identifier;
     }
+    async function regBoss(client, data) {
+      const existingAdmin = await client
+        .db("Database")
+        .collection("Boss")
+        .findOne({ username: data.username });
     
+      if (existingAdmin) {
+        return "Boss already registered";
+      }else {
+        data.password = await encryptPassword(data.password);
+        data.role = "Boss";
+        const result = await client.db("Database").collection("Boss").insertOne(data);
+        return 'Boss registered';
+      }
+        }
+  
+         //login 
+    async function Bosslogin(client, data) {
+      const user = await client.db('Database').collection('Boss').findOne({ username: data.username });
+      if (user) {
+        const isPasswordMatch = await decryptPassword(data.password, user.password);
+    
+        if (isPasswordMatch) {
+          
+          return Display(user.role) +" Token for " + user.role + ": " + generateToken(user);
+          
+          
+        } else {
+          return "Wrong password";
+        }
+      } else {
+        return "User not found";
+      }
+    }  
     //register admin 
   async function regAdmin(client, data) {
     const existingAdmin = await client
@@ -609,7 +705,7 @@ run().catch(console.error);
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
-        .findOne({ VisitorID: visitorData.VisitorID });
+        .findOne({ visitorID: visitorData.VisitorID });
   
       if (visitor) {
         return `Visitor Pass: ${visitor.passvisitor}`;
