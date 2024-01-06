@@ -357,7 +357,38 @@ async function run() {
       let visitorPass = req.body;
       res.send(await getSecurityPhoneByVisitorPass(client, data, visitorPass))
     });
-
+    /**
+ * @swagger
+ * /RetrieveVisitorPass:
+ *   post:
+ *     summary: Retrieve Visitor Pass by Visitor ID
+ *     description: Retrieves the Visitor Pass using the Visitor ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               VisitorID:
+ *                 type: string
+ *                 description: Visitor ID to retrieve Visitor Pass
+ *     responses:
+ *       '403':
+ *         description: Forbidden access
+ *       '404':
+ *         description: Visitor ID not found 
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Visitor
+ */
+    app.post('/RetrieveVisitorPass',authenticateToken,async (req,res) =>{
+      let data =req.user;
+      let visitorPass = req.body;
+      res.send(await getVisPassByVisID(client, data, visitorPass))
+    });
+    
 } catch (e) {
     console.error(e);
 
@@ -418,7 +449,7 @@ run().catch(console.error);
   async function regAdmin(client, data) {
     const existingAdmin = await client
       .db("Database")
-      .collection("admin1")
+      .collection("Admin1")
       .findOne({ username: data.username });
   
     if (existingAdmin) {
@@ -426,20 +457,20 @@ run().catch(console.error);
     }else {
       data.password = await encryptPassword(data.password);
       data.role = "Admin";
-      const result = await client.db("Database").collection("admin1").insertOne(data);
+      const result = await client.db("Database").collection("Admin1").insertOne(data);
       return 'Admin registered';
     }
       }
 
        //login 
   async function Adminlogin(client, data) {
-    const user = await client.db('Database').collection('admin1').findOne({ username: data.username });
+    const user = await client.db('Database').collection('Admin1').findOne({ username: data.username });
     if (user) {
       const isPasswordMatch = await decryptPassword(data.password, user.password);
   
       if (isPasswordMatch) {
         
-        return Display(user.role)," Token for " + user.role + ": " + generateToken(user);
+        return Display(user.role) +" Token for " + user.role + ": " + generateToken(user);
         
         
       } else {
@@ -497,6 +528,7 @@ run().catch(console.error);
       temporary = await client.db('Database').collection('PassVisitor').findOne({passvisitor: DataVis.passvisitor})
     if(!temporary) {
     if (data.role === 'Security') {
+      const newVisitorId = generateVisitorId();
       const visitorPassIdentifier = generateVisitorPassIdentifier();
       const result = await client.db('Database').collection('PassVisitor').insertOne({
         name: DataVis.name,
@@ -504,10 +536,12 @@ run().catch(console.error);
         phone: DataVis.phone,
         vehicleNo: DataVis.vehicleNo,
         role: 'Visitor',
+        visitorID: newVisitorId,
         securityNumber: data.phone,
+
         passvisitor: visitorPassIdentifier
       });
-      var message = 'Visitor registered successfully\n Visitor Pass : '+ visitorPassIdentifier ;
+      var message = 'Visitor registered successfully\n Visitor ID : '+ newVisitorId;
       return message}
      else {
       return 'Username already in use, please enter another username'
@@ -518,7 +552,7 @@ run().catch(console.error);
   //read from token and checking role to display 
   async function read(client, data) {
     if(data.role == 'Admin') {
-      Admins = await client.db('Database').collection('admin1').find({role:"Admin"}).next() //.next to read in object instead of array
+      Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
       Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
       Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
       return {Admins, Security, Visitors}
@@ -571,3 +605,45 @@ run().catch(console.error);
       return 'Error retrieving security phone';
     }
   }
+  async function getVisPassByVisID(client, data, visitorPass) {
+    try {
+  
+      const visitor = await client
+        .db('Database')
+        .collection('PassVisitor')
+        .findOne({ VisitorID: visitorPass.VisitorID });
+  
+      if (visitor) {
+        const passvisitor = await client
+          .db('Database')
+          .collection('PassVisitor')
+          .findOne({ passvisitor: passvisitor.passvisitor });
+  
+        if (passvisitor) {
+          return "Visitor Pass : " + passvisitor.passvisitor; // Return the security phone number
+        } else {
+          return 'Visitor Pass not found';
+        }
+      } else {
+        return 'Visitor ID not found';
+      }
+    } catch (error) {
+      console.error('Error retrieving security phone:', error);
+      return 'Error retrieving security phone';
+    }
+  }
+  // Function to generate a visitor ID
+// Function to generate a visitor ID with "vID" prefix
+function generateVisitorId() {
+  const prefix = 'vID'; // Prefix for the visitor ID
+  const length = 5; // Length of the random part of the visitor ID
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; // Characters to include in the ID
+  let randomPart = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    randomPart += charset[randomIndex];
+  }
+
+  return prefix + randomPart;
+}
