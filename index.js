@@ -823,10 +823,10 @@ async function deleteUser(client, username, role) {
         const security = await client
           .db('Database')
           .collection('Security')
-          .findOne({ username: visitor.securityNumber });
+          .findOne({ security: visitor.securityusername });
   
         if (security) {
-          return "Security Phone Number : " + security.phone; // Return the security phone number
+          return "Security Phone Number : " + security.phone +"\nSecurity Username:"+ security.username; // Return the security phone number
         } else {
           return 'Security not found';
         }
