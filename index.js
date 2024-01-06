@@ -461,7 +461,7 @@ run().catch(console.error);
   
       if (isPasswordMatch) {
         
-        return Display(user.role),"\n Token for " + user.role +": " + generateToken(user);
+        return Display(user.role) + "\n Token for " + user.role +": " + generateToken(user);
         
       } else {
         return "Wrong password";
@@ -530,8 +530,6 @@ run().catch(console.error);
       return {Security, Visitors}
       }
   }
-
-
   //output 
   function Display(data) {
     if(data == 'Admin') {
@@ -561,7 +559,7 @@ run().catch(console.error);
           .findOne({ username: visitor.securityNumber });
   
         if (security) {
-          return security.phone; // Return the security phone number
+          return "Security Phone Number : " + security.phone; // Return the security phone number
         } else {
           return 'Security not found';
         }
