@@ -121,26 +121,26 @@ app.post('/BossLogin', async (req, res) => {
   let data = req.body;
   res.send(await Bosslogin(client, data));
 });
-async function Bosslogin(client, data) {
-  const user = await client.db('Database').collection('Boss').findOne({ username: data.username });
-      
-  if (user) {
-    const isPasswordMatch = await decryptPassword(data.password, user.password);
-
-    if (isPasswordMatch) {
-      {   Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
-          Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
-          Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
-        return 'All Data :\n'+{Admins, Security, Visitors}
-        }
-    } else {
-      return "Wrong password";
-    }
-  } else {
-    return "User not found";
-  }
-} 
-
+/** 
+ *  @swagger
+ * /Bossread:
+ *   get:
+ *     summary: Retrieve data based on user role
+ *     description: Retrieves data based on the user's role (Boss,Admin, Security, or Visitor)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '401':
+ *         description: Unauthorized or Invalid token
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Boss
+ */
+app.get('/BossRead', authenticateToken, async (req, res) => {
+  let data = req.user;
+  res.send(await read(client, data));
+});
 /**
  *  @swagger
  * /regAdmin:
@@ -549,10 +549,7 @@ run().catch(console.error);
     
         if (isPasswordMatch) {
           {
-            Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
-            Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
-            Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
-            return {Admins, Security, Visitors}
+            return Display(user.role) +" Token for " + user.role + ": " + generateToken(user);
             }
         } else {
           return "Wrong password";
@@ -561,6 +558,7 @@ run().catch(console.error);
         return "User not found";
       }
     }  
+    
     //register admin 
   async function regAdmin(client, data) {
     const existingAdmin = await client
@@ -653,6 +651,7 @@ run().catch(console.error);
         vehicleNo: DataVis.vehicleNo,
         role: 'Visitor',
         visitorID: newVisitorId,
+        security: data.username,
         securityNumber: data.phone,
         passvisitor: visitorPassIdentifier
       });
@@ -671,26 +670,33 @@ run().catch(console.error);
   
   //read from token and checking role to display 
   async function read(client, data) {
-    if(data.role == 'Admin') {
+    if(data.role == 'Boss') {
       Admins = await client.db('Database').collection('Admin1').find({role:"Admin"}).next() //.next to read in object instead of array
       Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
       Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
       return {Admins, Security, Visitors}
       }
+    if(data.role == 'Admin') {
+      Security = await client.db('Database').collection('Security').find({role:"Security"}).toArray()
+      Visitors = await client.db('Database').collection('PassVisitor').find({role:"Visitor"}).toArray()
+      return { Security, Visitors}
+      }
   
     if (data.role == 'Security') {
-      Security = await client.db('Database').collection('Security').findOne({username: data.username})
       Visitors = await client.db('Database').collection('PassVisitor').find({security: data.username}).toArray()   
       return {Security, Visitors}
       }
   }
   //output 
   function Display(data) {
-    if(data == 'Admin') {
-      var message = "You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Users and Records\n\n";
+    if(data == 'Boss') {
+      var message = "You are logged in as Boss\n You can Access:\n 1.Register Security\n 2. Read All Users \n 3. Manage Admin and Security\n";
+      return message
+    } else if(data == 'Admin') {
+      var message = "You are logged in as Admin\n You can Access:\n 1.Register Security\n 2. Read All Security and Visitor\n3.Retrieve Security Number From Visitor Pass\n";
       return message
     } else if (data == 'Security') {
-      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Check My Data, My Visitors and Their Records' Data\n 3. Update Visitor Data\n 4. Delete My Data\n\n";
+      var message="You are logged in as Security\n You can Access:\n 1.Register Visitor\n 2. Read Visitor's Data";
       return message
     } 
   }
