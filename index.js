@@ -199,14 +199,14 @@ app.delete('/DeleteUser', authenticateToken, async (req, res) => {
 });
 
 
-
-
 /**
  *  @swagger
  * /regAdmin:
  *   post:
  *     summary: Register an Admin
  *     description: Registers an Admin if not already registered
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -226,11 +226,12 @@ app.delete('/DeleteUser', authenticateToken, async (req, res) => {
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - Admin
+ *       - Boss
  */
-    app.post('/regAdmin', async (req, res) => {
-      let data = req.body;
-      res.send(await regAdmin(client, data));
+    app.post('/regAdmin', authenticateToken, async (req, res) => {
+      let data = req.user;
+      let DataVis = req.body;
+      res.send(await register(client, data, DataVis));
     });
 
     /**
@@ -265,6 +266,26 @@ app.delete('/DeleteUser', authenticateToken, async (req, res) => {
       res.send(await Adminlogin(client, data));
     });
 
+/** 
+ *  @swagger
+ * /Adminread:
+ *   get:
+ *     summary: Retrieve data based on user role
+ *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '401':
+ *         description: Unauthorized or Invalid token
+ *       '500':
+ *         description: Internal server error
+ *     tags:
+ *       - Admin
+ */
+app.get('/AdminRead', authenticateToken, async (req, res) => {
+  let data = req.user;
+  res.send(await read(client, data));
+});
 
  /**
  * @swagger
@@ -439,27 +460,78 @@ app.post('/test/Securityregister', async (req, res) => {
       let data = req.user;
       res.send(await read(client, data));
     });
-
-/** 
- *  @swagger
- * /Adminread:
- *   get:
- *     summary: Retrieve data based on user role
- *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
+/**
+ * @swagger
+ * /DeleteVisitor:
+ *   delete:
+ *     summary: Delete Visitor
+ *     description: Deletes a Visitor (Security access only)
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               passvisitor:
+ *                 type: string
+ *                 description: Visitor Pass to delete the Visitor
  *     responses:
  *       '401':
  *         description: Unauthorized or Invalid token
+ *       '403':
+ *         description: Forbidden access or Visitor not created by the Security
+ *       '404':
+ *         description: Visitor pass not found or Visitor not found
  *       '500':
  *         description: Internal server error
  *     tags:
- *       - Admin
+ *       - Security
  */
-    app.get('/AdminRead', authenticateToken, async (req, res) => {
-      let data = req.user;
-      res.send(await read(client, data));
-    });
+app.delete('/DeleteVisitor', authenticateToken, async (req, res) => {
+  const data = req.user;
+  const visitorPass = req.body.passvisitor;
+
+  try {
+    // Check if the requester is a Security user
+    if (data.role !== 'Security') {
+      return res.status(403).send('Forbidden access');
+    }
+
+    // Find the visitor by passvisitor
+    const visitor = await client
+      .db('Database')
+      .collection('PassVisitor')
+      .findOne({ passvisitor: visitorPass });
+
+    if (!visitor) {
+      return res.status(404).send('Visitor pass not found');
+    }
+
+    // Check if the requester is the same security user who created the visitor
+    if (visitor.security !== data.username) {
+      return res.status(403).send('Forbidden access: Visitor not created by the Security');
+    }
+
+    // Proceed with deleting the visitor
+    const deletionResult = await client
+      .db('Database')
+      .collection('PassVisitor')
+      .deleteOne({ passvisitor: visitorPass });
+
+    if (deletionResult.deletedCount > 0) {
+      return res.send(`Visitor with pass ${visitorPass} successfully deleted`);
+    } else {
+      return res.status(500).send('Error deleting visitor');
+    }
+  } catch (error) {
+    console.error('Error deleting visitor:', error);
+    return res.status(500).send('Internal server error');
+  }
+});
+
 
 /**
  * @swagger
@@ -647,14 +719,30 @@ async function deleteUser(client, username, role) {
     }  
     
     //register admin 
+    async function regAdmin(client, data, DataVis) {
+
+      temporary = await client.db('Database').collection('Admin1').findOne({ role:"Admin"})
+    if(!temporary) {
+      if (data.role === 'Boss') {
+        data.password = await encryptPassword(data.password);
+        data.role = "Admin";
+        const result = await client.db("Database").collection("Admin1").insertOne(data);
+        return 'Admin registered successfully';}
+      else {
+            return'Only Boss have the authorize to register!!!';
+            }
+        
+      }else{
+        return "Only one admin can be register";}
+    }
   async function regAdmin(client, data) {
     const existingAdmin = await client
       .db("Database")
       .collection("Admin1")
-      .findOne({ username: data.username });
+      .findOne({ role:"Admin"});
   
     if (existingAdmin) {
-      return "Admin already registered";
+      return "Only one admin can be register";
     }else {
       data.password = await encryptPassword(data.password);
       data.role = "Admin";
@@ -722,15 +810,17 @@ async function deleteUser(client, username, role) {
         return 'Security registered successfully';
       }else{
         return 'You are not allowed to register';}
+    }else{
+      return 'Security username already register';
     }}
         //register function
         async function testregister(client, DataVis) {
 
-          temporary = await client.db('Database').collection('testSecurity').findOne({username: DataVis.username})
+          temporary = await client.db('Database').collection('Security').findOne({username: DataVis.username})
         if(!temporary) {
         
          {
-            const result = await client.db('Database').collection('testSecurity').insertOne({
+            const result = await client.db('Database').collection('Security').insertOne({
               username: DataVis.username,
               password: await encryptPassword(DataVis.password),
               name: DataVis.name,
