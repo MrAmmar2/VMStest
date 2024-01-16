@@ -819,7 +819,7 @@ async function deleteUser(client, username, role) {
         }}
 
     async function Securityregister(client, data, DataVis) {
-
+      const currentTime = new Date();
       temporary = await client.db('Database').collection('PassVisitor').findOne({passvisitor: DataVis.passvisitor})
     if(!temporary) {
     if (data.role === 'Security') {
@@ -834,7 +834,8 @@ async function deleteUser(client, username, role) {
         visitorID: newVisitorId,
         security: data.username,
         securityNumber: data.phone,
-        passvisitor: visitorPassIdentifier
+        passvisitor: visitorPassIdentifier,
+        createdAt: currentTime
       });
       const result1 = await client.db('Database').collection('Security').updateOne(
         { username: data.username },
