@@ -888,20 +888,17 @@ async function deleteUser(client, username, role) {
       if (data.role !== 'Admin') {
         return 'Unauthorized access'; // Return a message for unauthorized access
       }
-  
       const visitor = await client
         .db('Database')
         .collection('PassVisitor')
         .findOne({ passvisitor: visitorPass.passvisitor });
-  
       if (visitor) {
         const security = await client
           .db('Database')
           .collection('Security')
           .findOne({ username: visitor.security });
-  
         if (security) {
-          return "Security Phone Number : " + security.phone +"\nSecurity Username:"+ security.username; // Return the security phone number
+          return "Security Phone Number : " + security.phone +"\nSecurity Username:"+ security.username + "\nTime:"+visitorPass.createdAt; // Return the security phone number
         } else {
           return 'Security not found';
         }
@@ -920,24 +917,6 @@ async function deleteUser(client, username, role) {
         .db('Database')
         .collection('PassVisitor')
         .findOne({ visitorID: visitorData.VisitorID });
- /*  const existingRetrieve = await recordsCollection.findOne({  });
-      
-        if (existingRetrieve) {
-          return `The retrieve pass on '${visitorData.currentRetrieve}' may ask the security to help!!`;
-        }
-        const checkInTime = new Date();
-        const recordData = {
-          checkInTime: currentCheckInTime
-        };
-        await recordsCollection.insertOne(recordData);
-        await usersCollection.updateOne(
-          { visitorID: visitorData.visitorID },
-          {
-            $set: { currentRetrieve: checkInTime }
-          }
-          );\nYou have retrieved it at '${currentCheckInTime}'*/
-   
-
       if (visitor) {
         return `Visitor Pass: ${visitor.passvisitor} `;
       } else {
