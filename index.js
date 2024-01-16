@@ -231,7 +231,7 @@ app.delete('/DeleteUser', authenticateToken, async (req, res) => {
     app.post('/regAdmin', authenticateToken, async (req, res) => {
       let data = req.user;
       let DataVis = req.body;
-      res.send(await register(client, data, DataVis));
+      res.send(await regAdmin(client, data, DataVis));
     });
 
     /**
