@@ -721,12 +721,12 @@ async function deleteUser(client, username, role) {
     //register admin 
     async function regAdmin(client, data, DataVis) {
 
-      temporary = await client.db('Database').collection('Admin1').findOne({ role:"Admin"})
+      temporary = await client.db('Database').collection('Admin1').findOne({ username:DataVis.username})
     if(!temporary) {
       if (data.role === 'Boss') {
-        data.password = await encryptPassword(data.password);
-        data.role = "Admin";
-        const result = await client.db("Database").collection("Admin1").insertOne(data);
+        DataVis.password = await encryptPassword(DavaVis.password);
+        DataVis.role = "Admin";
+        const result = await client.db("Database").collection("Admin1").insertOne(DataVis);
         return 'Admin registered successfully';}
       else {
             return'Only Boss have the authorize to register!!!';
@@ -735,22 +735,7 @@ async function deleteUser(client, username, role) {
       }else{
         return "Only one admin can be register";}
     }
-  async function regAdmin(client, data) {
-    const existingAdmin = await client
-      .db("Database")
-      .collection("Admin1")
-      .findOne({ role:"Admin"});
-  
-    if (existingAdmin) {
-      return "Only one admin can be register";
-    }else {
-      data.password = await encryptPassword(data.password);
-      data.role = "Admin";
-      const result = await client.db("Database").collection("Admin1").insertOne(data);
-      return 'Admin registered';
-    }
-      }
-
+ 
        //login 
   async function Adminlogin(client, data) {
     const user = await client.db('Database').collection('Admin1').findOne({ username: data.username });
@@ -760,7 +745,6 @@ async function deleteUser(client, username, role) {
       if (isPasswordMatch) {
         
         return Display(user.role) +" Token for " + user.role + ": " + generateToken(user);
-        
         
       } else {
         return "Wrong password";
