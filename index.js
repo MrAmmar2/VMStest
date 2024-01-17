@@ -773,9 +773,12 @@ async function deleteUser(client, username, role) {
       temporary = await client.db('Database').collection('Admin1').findOne({ username:DataVis.username})
     if(!temporary) {
       if (data.role === 'Boss') {
-        DataVis.password = await encryptPassword(DavaVis.password);
-        DataVis.role = "Admin";
-        const result = await client.db("Database").collection("Admin1").insertOne(DataVis);
+        const result = await client.db("Database").collection("Admin1").insertOne({
+          username: DataVis.username,
+          password: await encryptPassword(DavaVis.password),
+          role: "Admin"
+        }  
+          );
         return 'Admin registered successfully';}
       else {
             return'Only Boss have the authorize to register!!!';
