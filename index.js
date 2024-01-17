@@ -768,26 +768,30 @@ async function deleteUser(client, username, role) {
     
     //register admin 
     async function regAdmin(client, data, DataVis) {
-
-      temporary = await client.db('Database').collection('Admin1').findOne({ username:DataVis.username})
-    if(!temporary) {
-      if (data.role === 'Boss') {
-        const result = await client.db("Database").collection("Admin1").insertOne({
-          username: DataVis.username,
-          password: await encryptPassword(DavaVis.password),
-          name:DataVis.name,
-          email:DataVis.email,
-          role: "Admin"
-        }  
-          );
-        return 'Admin registered successfully';}
-      else {
-            return'Only Boss have the authorize to register!!!';
-            }
-        
-      }else{
-        return "Admin already registered";}
-    }
+      try {
+        const temporary = await client.db('Database').collection('Admin1').findOne({ username: DataVis.username });
+    
+        if (!temporary) {
+          if (data.role === 'Boss') {
+            const result = await client.db("Database").collection("Admin1").insertOne({
+              username: DataVis.username,
+              password: await encryptPassword(DataVis.password), // Fix typo: DavaVis to DataVis
+              name: DataVis.name,
+              email: DataVis.email,
+              role: "Admin"
+            });
+    
+            return 'Admin registered successfully';
+          } else {
+            return 'Only Boss has the authority to register!';
+          }
+        } else {
+          return "Admin already registered";
+        }
+      } catch (error) {
+        console.error('Error registering admin:', error);
+        return 'An error occurred while registering admin';
+      }}
  
        //login 
   async function Adminlogin(client, data) {
