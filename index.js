@@ -650,12 +650,7 @@ run().catch(console.error);
 // Function to encrypt password with strength validation
 async function encryptPassword(password) {
   // Check if password meets strength requirements
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  // Check if password meets strength requirements
-  if (!passwordRegex.test(password)) {
-    throw new Error('Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.');
-  }
   const hash = await bcrypt.hash(password, saltRounds);
   return hash;
 }
@@ -740,10 +735,17 @@ async function deleteUser(client, username, role) {
       if (existingAdmin) {
         return "Boss already registered";
       }else {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        // Check if password meets strength requirements
+        if (!passwordRegex.test(data.password)) {
+          throw new Error('Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+        }else{
         data.password = await encryptPassword(data.password);
         data.role = "Boss";
         const result = await client.db("Database").collection("Boss").insertOne(data);
         return 'Boss registered';
+        }
       }
         }
   
