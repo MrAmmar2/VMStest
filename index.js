@@ -739,7 +739,7 @@ async function deleteUser(client, username, role) {
 
         // Check if password meets strength requirements
         if (!passwordRegex.test(data.password)) {
-          throw new Error('Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+          return('Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.');
         }else{
         data.password = await encryptPassword(data.password);
         data.role = "Boss";
