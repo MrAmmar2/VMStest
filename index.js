@@ -655,7 +655,7 @@ async function encryptPassword(password) {
   const hasSymbol = /[!@#$%^&*]/.test(password);
 
   if (!(hasUpperCase && hasLowerCase && hasSymbol)) {
-    throw new Error('Password must contain at least one uppercase letter, one lowercase letter, and one symbol.');
+    return'Password must contain at least one uppercase letter, one lowercase letter, and one symbol.';
   }
 
   const hash = await bcrypt.hash(password, saltRounds);
