@@ -7,6 +7,7 @@ const port = process.env.PORT || 3000;
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const swaggerJsdoc = require('swagger-jsdoc');
+const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
 const options = {
   definition: {
@@ -39,6 +40,44 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+// Create a map to store banned users with their roles
+const bannedUsers = new Map();
+
+// Function to create a user-specific rate limiter
+function createUserRateLimiter(windowMs, maxAttempts) {
+  return rateLimit({
+    windowMs,
+    max: maxAttempts,
+    message: (req, res) => { // Check if the user is banned and calculate the time left
+    const bannedUserKey = `${req.body.username}_${req.body.role}`;
+    if (bannedUsers.has(bannedUserKey)) {
+      const timeLeft = bannedUsers.get(bannedUserKey) - Date.now();
+      const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
+      return `Too many login attempts. Please try again in ${minutesLeft} minutes.`;
+    } else {
+      return 'Too many login attempts. Please try again later.';
+    }},
+    keyGenerator: (req) => {
+      // Generate a unique key based on username and role
+      return `${req.body.username}_${req.body.role}`;
+    },
+    onLimitReached: (req) => {
+      // Add the banned user to the map with the expiration time
+      const expirationTime = Date.now() + windowMs;
+      bannedUsers.set(`${req.body.username}_${req.body.role}`, expirationTime);
+
+      // Remove the user from the map after the ban duration
+      setTimeout(() => {
+        bannedUsers.delete(`${req.body.username}_${req.body.role}`);
+      }, windowMs);
+    },
+  });
+}
+
+// Example rate limiters for different roles
+const bossLoginLimiter = createUserRateLimiter(5 * 60 * 1000, 3); // 5 minutes, 3 attempts
+const adminLoginLimiter = createUserRateLimiter(5 * 60 * 1000, 3); // 5 minutes, 3 attempts
+const securityLoginLimiter = createUserRateLimiter(5 * 60 * 1000, 3); // 5 minutes, 3 attempts
 
 // Connect the client to the server (optional starting in v4.7)
 async function run() {
@@ -94,8 +133,8 @@ app.post('/regBoss', async (req, res) => {
 * @swagger
 * /BossLogin:
 *   post:
-*     summary: Admin Login
-*     description: Authenticates a user's login credentials
+*     summary: Boss Login
+*     description: Authenticates a Boss's login credentials
 *     requestBody:
 *       required: true
 *       content:
@@ -117,7 +156,7 @@ app.post('/regBoss', async (req, res) => {
 *     tags:
 *       - Boss
 */
-app.post('/BossLogin', async (req, res) => {
+app.post('/BossLogin',bossLoginLimiter, async (req, res) => {
   let data = req.body;
   res.send(await Bosslogin(client, data));
 });
@@ -261,7 +300,7 @@ app.delete('/DeleteUser', authenticateToken, async (req, res) => {
  *     tags:
  *       - Admin
  */
-    app.post('/Adminlogin', async (req, res) => {
+    app.post('/Adminlogin', adminLoginLimiter,async (req, res) => {
       let data = req.body;
       res.send(await Adminlogin(client, data));
     });
@@ -291,7 +330,7 @@ app.get('/AdminRead', authenticateToken, async (req, res) => {
  * @swagger
  * /Securitylogin:
  *   post:
- *     summary: User Login
+ *     summary: Security Login
  *     description: Authenticates a user's login credentials
  *     requestBody:
  *       required: true
@@ -314,7 +353,7 @@ app.get('/AdminRead', authenticateToken, async (req, res) => {
  *     tags:
  *       - Security
  */
-  app.post('/Securitylogin', async (req, res) => {
+  app.post('/Securitylogin',securityLoginLimiter, async (req, res) => {
     let data = req.body;
     res.send(await Securitylogin(client, data));
   });
@@ -608,11 +647,20 @@ app.delete('/DeleteVisitor', authenticateToken, async (req, res) => {
   }
 }
 run().catch(console.error);
-//encrypt Password
-  async function encryptPassword(password) {
-    const hash = await bcrypt.hash(password, saltRounds);
-     return hash;
-    }
+// Function to encrypt password with strength validation
+async function encryptPassword(password) {
+  // Check if password meets strength requirements
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasSymbol = /[!@#$%^&*]/.test(password);
+
+  if (!(hasUpperCase && hasLowerCase && hasSymbol)) {
+    throw new Error('Password must contain at least one uppercase letter, one lowercase letter, and one symbol.');
+  }
+
+  const hash = await bcrypt.hash(password, saltRounds);
+  return hash;
+}
   async function decryptPassword(password, compare) {
       const match = await bcrypt.compare(password, compare)
       return match;
@@ -655,6 +703,7 @@ run().catch(console.error);
       return identifier;
     }
 
+    
     // Function to delete an admin or security user
 async function deleteUser(client, username, role) {
   try {
