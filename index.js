@@ -45,7 +45,7 @@ const bannedUsers = new Map();
 
 // Function to create a user-specific rate limiter
 function createUserRateLimiter(windowMs, maxAttempts) {
-  const limiter = rateLimit({
+  return rateLimit({
     windowMs,
     max: maxAttempts,
     message: (req, res) => {
@@ -55,22 +55,22 @@ function createUserRateLimiter(windowMs, maxAttempts) {
         const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
         return `Too many login attempts. Please try again in ${minutesLeft} minutes.`;
       } else {
+        // Check if the limit is reached
+        if (req.rateLimit && req.rateLimit.remaining === 0) {
+          // Add the banned user to the map with the expiration time
+          const expirationTime = Date.now() + windowMs;
+          bannedUsers.set(bannedUserKey, expirationTime);
+
+          // Remove the user from the map after the ban duration
+          setTimeout(() => {
+            bannedUsers.delete(bannedUserKey);
+          }, windowMs);
+        }
         return 'Too many login attempts. Please try again later.';
       }
     },
     keyGenerator: (req) => `${req.body.username}_${req.body.role}`,
   });
-
-  limiter.on('handler', (req) => {
-    const expirationTime = Date.now() + windowMs;
-    bannedUsers.set(`${req.body.username}_${req.body.role}`, expirationTime);
-
-    setTimeout(() => {
-      bannedUsers.delete(`${req.body.username}_${req.body.role}`);
-    }, windowMs);
-  });
-
-  return limiter;
 }
 
 // Example rate limiters for different roles
