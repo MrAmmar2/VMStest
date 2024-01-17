@@ -535,7 +535,7 @@ app.delete('/DeleteVisitor', authenticateToken, async (req, res) => {
   try {
     // Check if the requester is a Security user
     if (data.role !== 'Security') {
-      return res.status(403).send('Forbidden access');
+      return res.status(401).send('Forbidden access');
     }
 
     // Find the visitor by passvisitor
