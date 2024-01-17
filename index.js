@@ -513,7 +513,7 @@ app.post('/test/Securityregister', async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               passvisitor:
+ *               visitorID:
  *                 type: string
  *                 description: Visitor Pass to delete the Visitor
  *     responses:
@@ -530,7 +530,7 @@ app.post('/test/Securityregister', async (req, res) => {
  */
 app.delete('/DeleteVisitor', authenticateToken, async (req, res) => {
   const data = req.user;
-  const visitorPass = req.body.passvisitor;
+  const VisitorID = req.body.visitorID;
 
   try {
     // Check if the requester is a Security user
@@ -542,7 +542,7 @@ app.delete('/DeleteVisitor', authenticateToken, async (req, res) => {
     const visitor = await client
       .db('Database')
       .collection('PassVisitor')
-      .findOne({ passvisitor: visitorPass });
+      .findOne({ visitorID: VisitorID });
 
     if (!visitor) {
       return res.status(404).send('Visitor pass not found');
@@ -557,10 +557,10 @@ app.delete('/DeleteVisitor', authenticateToken, async (req, res) => {
     const deletionResult = await client
       .db('Database')
       .collection('PassVisitor')
-      .deleteOne({ passvisitor: visitorPass });
+      .deleteOne({ visitorID: VisitorID });
 
     if (deletionResult.deletedCount > 0) {
-      return res.send(`Visitor with pass ${visitorPass} successfully deleted`);
+      return res.send(`Visitor with ID ${VisitorID} successfully deleted`);
     } else {
       return res.status(500).send('Error deleting visitor');
     }
@@ -975,7 +975,7 @@ async function deleteUser(client, username, role) {
         .collection('PassVisitor')
         .findOne({ visitorID: visitorData.VisitorID });
       if (visitor) {
-        return `Visitor Pass: ${visitor.passvisitor} `;
+        return `Visitor Pass: ${visitor.passvisitor} \n Visited Time:${visitor.createdAt} `;
       } else {
         return 'Visitor ID not found';
       }
