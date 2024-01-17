@@ -975,7 +975,7 @@ async function deleteUser(client, username, role) {
         .collection('PassVisitor')
         .findOne({ visitorID: visitorData.VisitorID });
       if (visitor) {
-        return `Visitor Pass: ${visitor.passvisitor} \n Visited Time:${visitor.createdAt} `;
+        return `Visitor Pass: ${visitor.passvisitor} \nSecurity: ${visitor.security}\n Visited Time:${visitor.createdAt} `;
       } else {
         return 'Visitor ID not found';
       }
