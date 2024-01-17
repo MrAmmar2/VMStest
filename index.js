@@ -650,14 +650,12 @@ run().catch(console.error);
 // Function to encrypt password with strength validation
 async function encryptPassword(password) {
   // Check if password meets strength requirements
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasLowerCase = /[a-z]/.test(password);
-  const hasSymbol = /[!@#$%^&*]/.test(password);
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  if (!(hasUpperCase && hasLowerCase && hasSymbol)) {
-    throw new Error('Password must contain at least one uppercase letter, one lowercase letter, and one symbol.');
+  // Check if password meets strength requirements
+  if (!passwordRegex.test(password)) {
+    throw new Error('Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.');
   }
-
   const hash = await bcrypt.hash(password, saltRounds);
   return hash;
 }
