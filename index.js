@@ -45,33 +45,32 @@ const bannedUsers = new Map();
 
 // Function to create a user-specific rate limiter
 function createUserRateLimiter(windowMs, maxAttempts) {
-  return rateLimit({
+  const limiter = rateLimit({
     windowMs,
     max: maxAttempts,
-    message: (req, res) => { // Check if the user is banned and calculate the time left
-    const bannedUserKey = `${req.body.username}_${req.body.role}`;
-    if (bannedUsers.has(bannedUserKey)) {
-      const timeLeft = bannedUsers.get(bannedUserKey) - Date.now();
-      const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
-      return `Too many login attempts. Please try again in ${minutesLeft} minutes.`;
-    } else {
-      return 'Too many login attempts. Please try again later.';
-    }},
-    keyGenerator: (req) => {
-      // Generate a unique key based on username and role
-      return `${req.body.username}_${req.body.role}`;
+    message: (req, res) => {
+      const bannedUserKey = `${req.body.username}_${req.body.role}`;
+      if (bannedUsers.has(bannedUserKey)) {
+        const timeLeft = bannedUsers.get(bannedUserKey) - Date.now();
+        const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
+        return `Too many login attempts. Please try again in ${minutesLeft} minutes.`;
+      } else {
+        return 'Too many login attempts. Please try again later.';
+      }
     },
-    onLimitReached: (req) => {
-      // Add the banned user to the map with the expiration time
-      const expirationTime = Date.now() + windowMs;
-      bannedUsers.set(`${req.body.username}_${req.body.role}`, expirationTime);
-
-      // Remove the user from the map after the ban duration
-      setTimeout(() => {
-        bannedUsers.delete(`${req.body.username}_${req.body.role}`);
-      }, windowMs);
-    },
+    keyGenerator: (req) => `${req.body.username}_${req.body.role}`,
   });
+
+  limiter.on('handler', (req) => {
+    const expirationTime = Date.now() + windowMs;
+    bannedUsers.set(`${req.body.username}_${req.body.role}`, expirationTime);
+
+    setTimeout(() => {
+      bannedUsers.delete(`${req.body.username}_${req.body.role}`);
+    }, windowMs);
+  });
+
+  return limiter;
 }
 
 // Example rate limiters for different roles
@@ -481,10 +480,10 @@ app.post('/test/Securityregister', async (req, res) => {
 
 /** 
  *  @swagger
- * /Securityread:
+ * /ListOfVisitor:
  *   get:
- *     summary: Retrieve data based on user role
- *     description: Retrieves data based on the user's role (Admin, Security, or Visitor)
+ *     summary: Retrieve data of visitor 
+ *     description: Retrieves data based on the under the Security
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -495,7 +494,7 @@ app.post('/test/Securityregister', async (req, res) => {
  *     tags:
  *       - Security
  */
-    app.get('/SecurityRead', authenticateToken, async (req, res) => {
+    app.get('/ListOfVisitor', authenticateToken, async (req, res) => {
       let data = req.user;
       res.send(await read(client, data));
     });
@@ -776,6 +775,8 @@ async function deleteUser(client, username, role) {
         const result = await client.db("Database").collection("Admin1").insertOne({
           username: DataVis.username,
           password: await encryptPassword(DavaVis.password),
+          name:DataVis.name,
+          email:DataVis.email,
           role: "Admin"
         }  
           );
@@ -785,7 +786,7 @@ async function deleteUser(client, username, role) {
             }
         
       }else{
-        return "Only one admin can be register";}
+        return "Admin already registered";}
     }
  
        //login 
