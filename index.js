@@ -955,7 +955,7 @@ async function deleteUser(client, username, role) {
           .collection('Security')
           .findOne({ username: visitor.security });
         if (security) {
-          return "Security Phone Number : " + security.phone +"\nSecurity Username:"+ security.username + "\nTime:"+visitorPass.createdAt; // Return the security phone number
+          return "Security Phone Number : " + security.phone +"\nSecurity Username:"+ security.username + "\nTime:"+visitor.createdAt; // Return the security phone number
         } else {
           return 'Security not found';
         }
