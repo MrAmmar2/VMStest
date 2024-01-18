@@ -100,8 +100,8 @@ async function run() {
  *  @swagger
  * /regBoss:
  *   post:
- *     summary: Register an Admin
- *     description: Registers an Admin if not already registered
+ *     summary: Register an Boss
+ *     description: Registers an Boss if not already registered
  *     requestBody:
  *       required: true
  *       content:
@@ -442,8 +442,8 @@ app.post('/test/Securityregister', async (req, res) => {
  * @swagger
  * /Visitorregister:
  *   post:
- *     summary: Register a user
- *     description: Registers a user based on role (Admin or Security)
+ *     summary: Create visitor
+ *     description: Registers a visitor 
  *     security:
  *       - bearerAuth: []
  *     requestBody:
